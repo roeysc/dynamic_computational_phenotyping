@@ -5,15 +5,16 @@ from scipy import stats
 import cmdstanpy
 
 model = "independent"  # "independent" or "dynamical"
+normalize_exogenous_variables = True
 
 if model == "independent":
     model = CmdStanModel(
-        stan_file='/n/gershman_lab/users/Stan/1_code/publish_code/stan/final_independent_models/gng_hierarchical_independent_modified_model_with_gq_final.stan',
+        stan_file='/n/gershman_lab/users/Stan/1_code/publish_code/stan/final_independent_models/gng_independent.stan',
                          cpp_options={'STAN_THREADS': True})
 
 elif model == "dynamical":
         model = CmdStanModel(
-            stan_file='/n/gershman_lab/users/Stan/1_code/publish_code/stan/final_dynamical_models/gng_hierarchical_super_model_noWeights_noPrev_0effects_rho2_RewPun_Neut_GQ_varExplained_PD_exo2_piPos.stan',
+            stan_file='/n/gershman_lab/users/Stan/1_code/publish_code/stan/final_dynamical_models/gng_dynamic.stan',
             cpp_options={'STAN_THREADS': True})
 
 
@@ -24,6 +25,12 @@ data_itc_all_weeks = pd.read_csv('/n/gershman_lab/users/Stan/2_task_data_files/d
 # make data GNG
 data_gng_all_weeks = pd.read_csv('/n/gershman_lab/users/Stan/2_task_data_files/data_90_subs/final/gng_data_for_stan_90s.csv')
 
+# load exo data for the dynamic model
+data_exo_all_weeks1 = np.array(pd.read_csv('/net/rcstorenfs02/ifs/rc_labs/gershman_lab/users/Stan/2_task_data_files/'
+                                  'data_90_subs/exogenous_variables/exo_day1_gng_rdm_PC1_valence.csv', header=None))
+data_exo_all_weeks2 = np.array(pd.read_csv('/net/rcstorenfs02/ifs/rc_labs/gershman_lab/users/Stan/2_task_data_files/'
+                                  'data_90_subs/exogenous_variables/exo_day1_gng_rdm_PC2_arousal.csv', header=None))
+
 all_subjects = data_gng_all_weeks.subjectId # make data frames
 subjects = all_subjects.unique()
 # exclude_gng_subjects_with_accuracy_below_055:
@@ -32,6 +39,10 @@ sub_exclude = [1, 2, 3, 6, 8, 9, 15, 16, 17, 28, 33, 34, 37, 39, 44, 59, 60, 68,
 for idx in range(0, np.shape(sub_exclude)[0]):
     data_gng_all_weeks = data_gng_all_weeks.drop(
         data_gng_all_weeks[(data_gng_all_weeks['subjectId'] == subjects[sub_exclude[idx] - 1])].index)
+
+# remove these subjects' data also from the exo data
+data_exo_all_weeks1 = np.delete(data_exo_all_weeks1, [x - 1 for x in sub_exclude], axis=0)
+data_exo_all_weeks2 = np.delete(data_exo_all_weeks2, [x - 1 for x in sub_exclude], axis=0)
 
 all_subjects = data_gng_all_weeks.subjectId # make data frames
 subjects = all_subjects.unique()
@@ -64,6 +75,9 @@ Tr_gng_all = np.zeros([N, W, Bl])
 cue_gng_all = np.zeros([N, W, Bl, Tr_max_gng_all])
 pressed_gng_all = np.zeros([N, W, Bl, Tr_max_gng_all])
 outcome_gng_all = np.zeros([N, W, Bl, Tr_max_gng_all])
+
+Num_exo = 2  # 2 PCs
+exo_data_all = np.zeros([N, W, Num_exo])
 
 sub = 0
 for s in subjects[0:N]:
@@ -204,10 +218,47 @@ for s in subjects[0:N]:
     idx_gng_obs_all[sub, :] = idx_gng_obs
     # idx_gng_mis_all[sub, :] = idx_gng_mis
 
+    # EXO
+    ######
+    data_exo_tmp1 = data_exo_all_weeks1[sub, :]
+    data_exo_tmp2 = data_exo_all_weeks2[sub, :]
+
+    idx_exo_obs1 = np.array([i for i, x in enumerate(~np.isnan(data_exo_tmp1)) if x]) + 1
+    idx_exo_mis1 = np.array([i for i, x in enumerate(np.isnan(data_exo_tmp1)) if x]) + 1
+
+    idx_exo_obs2 = np.array([i for i, x in enumerate(~np.isnan(data_exo_tmp2)) if x]) + 1
+    idx_exo_mis2 = np.array([i for i, x in enumerate(np.isnan(data_exo_tmp2)) if x]) + 1
+
+
+    exo_data_inter1 = np.append(data_exo_tmp1[idx_exo_obs1 - 1],
+                                 np.interp(idx_exo_mis1 - 1, idx_exo_obs1 - 1, data_exo_tmp1[idx_exo_obs1 - 1]))
+    exo_data_inter2 = np.append(data_exo_tmp2[idx_exo_obs2 - 1],
+                                 np.interp(idx_exo_mis2 - 1, idx_exo_obs2 - 1, data_exo_tmp2[idx_exo_obs2 - 1]))
+
+    exo_data_all[sub, :, 0] = exo_data_inter1
+    exo_data_all[sub, :, 1] = exo_data_inter2
+
     sub = sub + 1
+
+
+if normalize_exogenous_variables:
+    for s in range(0, N):
+        for d in range(0, Num_exo):
+            if np.unique(exo_data_all[s, :, d]).shape[
+                0] == 1:  # If the values are constant throughout sessions, convert to all zeros, to avoid getting nan's
+                exo_data_all[s, :, d] = exo_data_all[s, :, d] * 0
+            else:
+                tmp_min = exo_data_all[s, :, d].min()
+                tmp_max = exo_data_all[s, :, d].max()
+                tmp = (exo_data_all[s, :, d] - tmp_min) / (tmp_max - tmp_min)  # This is normalized to [0,1]
+                exo_data_all[s, :, d] = tmp * 2 - 1  # This is normalized to [-1,1]]
+
 
 lg_data_stan = {'W': W,
                 'N': N,
+
+                'exo_q_num': Num_exo,
+                'U': exo_data_all.tolist(),
 
                 'P_itc': P_itc,
                 'idx_itc_obs': idx_itc_obs_all.astype(int),
@@ -233,5 +284,5 @@ fit = model.sample(data=lg_data_stan, inits=0, chains=4, parallel_chains=2, thre
                    max_treedepth=10, adapt_delta=0.95, step_size=0.05, iter_warmup=1000, save_warmup=False,
                    iter_sampling=1000,
                    thin=1, show_progress=True,
-                   output_dir='/n/gershman_lab/users/Stan/4_hierarchical/gng_hierarchical_parallel/with_default_sampler/',
+                   output_dir='OUTPUTDIR',
                    save_diagnostics=False)
