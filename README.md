@@ -1,5 +1,5 @@
 # dynamic_computational_phenotyping
-Code and data for: Schurr, Reznik et al. (submitted). Dynamic computational phenotyping of human cognition.
+Code and data for: Schurr, Reznik, Hillman, Bhui, Gershman (submitted). Dynamic computational phenotyping of human cognition.
 
 Code consists of several groups:
 - Stan: A Stan file of the computational model of each task. Each model has two versions, both of them are hierarchical models - the 'independent' version (which assumes no temporal structure of the phenotype) and the 'dynamic' version, which embodies specific assumptions about the temporal evolution of the phenotype. This folder contains a short tutorial on how to run these scripts.
