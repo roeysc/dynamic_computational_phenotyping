@@ -7,4 +7,4 @@ The code depositiry description:
 - Matlab (required libraries are indicated in the code): Analysis code at the level of behavior and parameter estimates.
 - Tasks: All the scripts that were used for running the tasks. The tasks were coded by Hanna Hillman with the assistance of Jasmine Zhou.
 
-Data: Data accompanying this masncuript will be made puclicly availble in the future.
+Data: Data accompanying this masncuript will be made publicly availble in the future.
