@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+  <html>
+    	<head>
+        <title>Dot Motion Game</title>
+    		<script src="jspsych-6.0.5/jspsych.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-call-function.js"></script>
+    		<!-- <script src="jspsych-6.0.5/plugins/jspsych-RDK-mod.js"></script> -->
+        <script src="jspsych-6.0.5/plugins/jspsych-RDK.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+    		<link rel="stylesheet" href="jspsych-6.0.5/css/jspsych.css"></link>
+    		<link rel='stylesheet' type='text/css' href='jspsych-6.0.5/css/jspsych.css'>
+    		<link rel="stylesheet" href="jspsych-6.0.5/css/style.css"></link>
+    	</head>
+    	<body></body>
+    	<script>
+
+// why is this necessary? For some reason or another the fullscreen plugin and rdk plugin are incompatible. The fullscreen functionality will work
+//                        but the rdk stimulus will not be centered, or rather it will be centered respective to the window prior to it entering
+//                        fullscreen mode. Therefore I made this extra page to request subjects to manually adjust their window to be full screen
+
+        // timeline start //
+                timeline = []; // start timeline
+
+      // identifying info //
+
+                var weekId = "1"; // change weekly 
+                jsPsych.data.addProperties({
+                  weekId: weekId
+                });
+
+                var expId = "pre_rdm_" + jsPsych.randomization.randomID(8); // mturk experiment id: (rdm = random dot motion)
+                var eId = "pre_rdm"; // mturk experiment id: (rdm = random dot motion)
+                jsPsych.data.addProperties({
+                  expId: eId
+                });
+
+                var fullurl = window.location.href;
+                jsPsych.data.addProperties({
+                  url: fullurl
+                });
+
+                var subjectId = jsPsych.data.getURLVariable('workerId');
+                jsPsych.data.addProperties({
+                  subjectId: subjectId
+                });
+
+                var assignmentId = jsPsych.data.getURLVariable('assignmentId');
+                jsPsych.data.addProperties({
+                  assignmentId: assignmentId
+                });
+
+                var hitId = jsPsych.data.getURLVariable('hitId');
+                jsPsych.data.addProperties({
+                  hitId: hitId
+                });
+
+                // var subjectId =  jsPsych.randomization.randomID(5); // random subject id for beta testing
+                // jsPsych.data.addProperties({
+                //   subjectId: subjectId
+                // });
+                //
+                // var assignmentId = "abc"; // mturk assignment id
+                // jsPsych.data.addProperties({
+                //   assignmentId: assignmentId
+                // });
+                // var hitId = "123"; // mturk hit id
+                // jsPsych.data.addProperties({
+                //   hitId: hitId
+                // });
+
+
+      // fullscreen //
+                var fullscreen_rq = {
+                    type: 'instructions',
+                    pages: [
+                        "<p>Please manually adjust your browser window to be full screen and leave it as such for the remainder of the task.</p>" +
+                        "<p>After entering full screen mode it is very important that you do not exit, switch tabs, minimize, or adjust the browser window for the remainder of the game.</p>" +
+                        "<p>Doing so changes the display of the game and the game does not pause once started.</p>" +
+                        "<p>We can detect if you exit fullscreen, minimize the window, or switch to another tab, and we reserve the right to withold bonus/payment if this is indicated.</p>" +
+                        "<p>Thank you! Click <q>Next</q> <i>after you have adjusted your screen</i> to continue to the game instructions.</p>",
+                      ],
+                    show_clickable_nav: true,
+                    // on_finish: function() {
+                    //   jsPsych.data.get().localSave('csv','pre_rdm_fs.csv');
+                    // }
+                };
+                timeline.push(fullscreen_rq)
+
+
+// save csv
+
+                function saveData_csv(name, data){
+                  var xhr = new XMLHttpRequest();
+                  xhr.open('POST', 'save_data.php');
+                  xhr.setRequestHeader('Content-Type', 'application/json');
+                  xhr.send(JSON.stringify({filename: name, filedata: data}));
+                }
+
+                var save_data = {
+                  type: 'call-function',
+                  func: function(){ saveData_csv(subjectId + '_' + weekId + '_' + expId, jsPsych.data.get().csv());
+                  },
+                  timing_post_trial: 0,
+                  on_finish: function(data) {
+                    jsPsych.data.addDataToLastTrial({
+                      exp_stage:"save_CSV",
+                      primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+                    })
+                  }
+                };
+                timeline.push(save_data);
+                console.log('csv save successful')
+
+// save and run
+        jsPsych.init({
+        timeline: timeline,
+        on_finish: function() {window.location.href = "rdm_1.html" + '?workerId=' + subjectId + '&hitId=' + hitId + '&assignmentId=' + assignmentId}
+
+      });
+
+</script>
+</html>
