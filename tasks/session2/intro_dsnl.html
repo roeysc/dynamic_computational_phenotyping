@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Intro Survey</title>
+        <script src="jspsych-6.0.5/jspsych.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-fullscreen.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+        <script src='jspsych-6.0.5/plugins/jspsych-survey-text.js'></script>
+        <script src='jspsych-6.0.5/plugins/jspsych-survey-likert.js'></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-multi-choice.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-multi-select.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-html-button-response.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-call-function.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-external-html.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="jspsych-6.0.5/css/jspsych.css"></link>
+        <link rel="stylesheet" href="jspsych-6.0.5/css/style.css"></link>
+        <link href="jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+        <link rel='stylesheet' type='text/css' href='jspsych-6.0.5/css/jspsych.css'>
+    </head>
+    <body></body>
+    <script>
+
+  // start timeline
+
+            timeline = []
+
+  // quick change variables
+            num_q_all = 39 //49
+            nextTask_Id = "dp"
+            nextTask_name = "Brief Personality Quiz"
+
+
+    // add info for quiz
+
+            // weeks of participation (0 = pilot)
+            var weekId = "1"; // changed each week
+            jsPsych.data.addProperties({
+              weekId: weekId
+            });
+
+            // other tasks in session
+            var otherExp = "dsnl";// changed each week to reflect task order, dsnl = dospert, slot-machine/bandit, numerosity comparison, lottery ticket
+            jsPsych.data.addProperties({
+              other_exp: otherExp
+            });
+
+
+            // experiment Id
+            var expId = "intro_" + otherExp + "_" + jsPsych.randomization.randomID(8); // extra 8 character random string to filenames helps prevent files being written over when saving
+            var eId = "intro_" + otherExp;
+            jsPsych.data.addProperties({
+              expId: eId
+            });
+
+            // url
+            var fullurl = window.location.href;
+            jsPsych.data.addProperties({
+              url: fullurl
+            });
+
+         // gets mturk information
+            function turkGetParam(name) {
+              var regexS = "[\?&]" + name + "=([^&#]*)";
+              var regex = new RegExp(regexS);
+              var tmpURL = fullurl;
+              var results = regex.exec(tmpURL);
+              if (results == null) {
+                return "";
+              } else {
+                return results[1];
+              }
+            };
+
+        // gets mturk info
+            var es_subjectId = turkGetParam('workerId');
+            var es_assignmentId = turkGetParam('assignmentId');
+            var es_hitId = turkGetParam('hitId');
+
+        // back up
+            var turkInfo = jsPsych.turk.turkInfo();
+            var turk_subjectId = turkInfo.workerId;
+            var turk_assignmentId = turkInfo.assignmentId;
+            var turk_hitId = turkInfo.hitId;
+
+        // if there is no mturk information assign a random id
+            var randoId =  jsPsych.randomization.randomID(5); // Random subject Id
+            var assign_rando = "assignmentId";
+            var hit_rando = "hitId"
+
+        // selects turk info
+            function getSubjectId(rando_id, es_id, turk_id) {
+              if (turk_id != null && turk_id != undefined && turk_id != ""){
+                return turk_id;
+              } else if
+                (es_id != null && es_id != undefined && es_id != ""){
+                 return es_subjectId;
+              } else {
+                return rando_id;
+              }
+            };
+
+        // assigns turk info to data columns
+            var subjectId = getSubjectId(randoId, es_subjectId, turk_subjectId);
+            jsPsych.data.addProperties({
+              subjectId: getSubjectId(randoId, es_subjectId, turk_subjectId)
+            });
+            var assignmentId = getSubjectId(assign_rando, es_assignmentId, turk_assignmentId);
+            jsPsych.data.addProperties({
+              assignmentId: getSubjectId(assign_rando, es_assignmentId, turk_assignmentId)
+            });
+            var hitId = getSubjectId(hit_rando, es_hitId, turk_hitId);
+            jsPsych.data.addProperties({
+              hitId: getSubjectId(hit_rando, es_hitId, turk_hitId)
+            });
+
+// introduce intro_quiz
+
+      // consent - must have this file in the same folder as intro_... for it to work
+          var check_consent = function(elem) {
+            if ($('#consent_checkbox').is(':checked')) { return true; }
+            else {
+              alert("If you wish to participate, you must check the box.");
+              return false;
+            }
+            return false;
+          };
+
+          var consent_block = {
+            type:'external-html',
+            url: "consent.html",
+            cont_btn: "start",
+            check_fn: check_consent,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"consent",
+
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "consent"
+              })
+            }
+          };
+          timeline.push(consent_block);
+
+    // fullscreen mode
+
+            var fullscreen = {
+              type: 'fullscreen',
+              fullscreen_mode: true,
+              on_finish: function(data) {
+                jsPsych.data.addDataToLastTrial({
+                  exp_stage:"fullscreen",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "fullscreen"
+                })
+              }
+            };
+            timeline.push(fullscreen);
+
+
+    // instructions block
+            var instructions = {
+                type: 'instructions',
+                pages: [
+                  '<p>Welcome to our study!</p>',
+                    "<p>We greatly appreciate your participation. </p>" +
+                    "<p>Before we proceed with the task, we would like you to take this brief introductory survey. </p>" +
+                    "<p>You will be asked to answer this survey each day that you participate in the study.</p>" +
+                    "<p>Press the <q>Next</q> button to begin.</p>" +
+                    "<p><i> Please do not press the <q>back</q> button in your browser at any point during the questionnaire.</i></p>"
+
+                   ],
+                show_clickable_nav: true,
+                on_load: function() {
+                  console.log('The trial just finished loading.');
+                },
+                on_finish: function(data) {
+                  jsPsych.data.addDataToLastTrial({
+                    exp_stage:"instructions",
+                    question: "Press the Next button to begin",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+            };
+
+            timeline.push(instructions)
+
+
+// have them manually enter mturk id as a safety
+              var mturk_id= {
+                type:'survey-text',
+                questions: [
+                  {prompt: "Please input your Mturk Worker ID so that we can pay you the appropriate bonus. Your ID will not be shared with anyone outside of our research team.",
+                    required: true,
+                        }
+                ],
+              required: true,
+              on_finish: function(data) {
+
+                q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 1 // question counter
+                data.q_num = q_num
+                // console.log(q_num + '_' + q_num / num_q_all)
+                jsPsych.setProgressBar(q_num / num_q_all)                              // progress bar
+
+                var dat1 = jsPsych.data.getLastTrialData().values()[0];                // data entry in proper column
+                var dat_mturkId = JSON.parse(dat1.responses).Q0;
+                data.answer = dat_mturkId
+                jsPsych.data.addDataToLastTrial({
+                  exp_stage:"mturk_id",
+                  question: "Please input your Mturk Worker ID so that we can pay you the appropriate bonus. Your ID will not be shared with anyone outside of our research team.",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "main",
+                  choices: "write_in",
+                })
+              }
+            };
+            timeline.push(mturk_id);
+
+// question - current time
+                var time = {
+                  type:'survey-multi-choice',
+                  preamble: "What is the current time (round to the nearest 15 minute interval)?",
+                  questions: [
+                    {prompt: "Hour:",
+                      options: [
+                              "1",
+                              "2",
+                              "3",
+                              "4",
+                              "5",
+                              "6",
+                              "7",
+                              "8",
+                              "9",
+                              "10",
+                              "11",
+                              "12",
+                            ],
+                        horizontal: true,
+                      required: true,
+                    },
+                    {prompt: "Minute:",
+                      options: [
+                              "00",
+                              "15",
+                              "30",
+                              "45",
+                            ],
+                        horizontal: true,
+                      required: true,
+                    },
+                    {prompt: "AM/PM:" + "<br> (12:00 noon is 12:00 <i>PM</i>, 12:00 midnight 12:00 <i>AM</i>)",
+                      options: [
+                              "AM",
+                              "PM",
+                            ],
+                        horizontal: true,
+                      required: true,}
+
+                  ],
+                required: true,
+                on_finish: function(data) {
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                  data.q_num = q_num
+                  console.log(q_num + '_' + q_num / num_q_all)
+                  jsPsych.setProgressBar(q_num / num_q_all)
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var hours = Number(JSON.parse(dat1.responses).Q0);
+                  var min = JSON.parse(dat1.responses).Q1;
+                  var tod = JSON.parse(dat1.responses).Q2;
+                  var adj_hrs = [];
+                  if (tod == "PM" && hours != 12) {
+                    adj_hrs = hours + 12
+                  } else if (tod == "PM" && hours == 12) {
+                    adj_hrs = 12
+                  } else if (tod = "AM" && (hours == 10 || hours == 11)) {
+                    adj_hrs = hours
+                  } else if (todd = "AM" && hours < 10) {
+                    adj_hrs = "0" + hours
+                  } else if (tod = "AM" && hours == 12) {
+                    adj_hrs = "00"
+                  };
+                  time = adj_hrs+min;
+                  data.answer = time;
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "time",
+                    question: "What is the current time (round to the nearest 15 minute interval)?",
+                    exp_stage:"question",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(time)
+
+// question - current timezone
+                var timezone= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "What timezone are you in?" +
+                    '<td><img src= img/timezones.png style="width: 500px;"></td>',
+                      options: [
+                              " 1) Eastern",
+                              " 2) Central",
+                              " 3) Mountain",
+                              " 4) Pacific",
+                              " 5) Alaska",
+                              " 6) Hawaii Aleutian",
+                            ],
+                      required: true,
+                          }
+                  ],
+                required: true,
+                on_finish: function(data) {
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                  data.q_num = q_num
+                  console.log(q_num + '_' + q_num / num_q_all)
+                  jsPsych.setProgressBar(q_num / num_q_all)
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "timezone",
+                    question: "What timezone are you in?",
+                    choices: " 1) Eastern"+
+                            " 2) Central"+
+                            " 3) Mountain"+
+                            " 4) Pacific"+
+                            " 5) Alaska"+
+                            " 6) Hawaii Aleutian",
+                    exp_stage:"question",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(timezone);
+
+// question - browser
+              var browser= {
+                type:'survey-multi-choice',
+                questions: [
+                  {prompt: "What internet browser are you using?",
+                    options: [
+                            " 1) Firefox",
+                            " 2) Google Chrome",
+                            " 3) Internet Explorer",
+                            " 4) Safari",
+                            " 5) Microsoft Edge",
+                            " 6) Other",
+                          ],
+                    required: true,
+                        }
+                ],
+              required: true,
+              on_finish: function(data) {
+
+
+                q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                console.log(q_num + '_' + q_num / num_q_all)
+                jsPsych.setProgressBar(q_num / num_q_all)
+
+
+                var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                var answer1 = JSON.parse(dat1.responses).Q0;
+                data.answer = answer1;
+
+                // data.quest = jsPsych.data.getLastTrialData().values()[0].prompt;
+                // console.log(JSON.stringify(quest))
+
+
+                jsPsych.data.addDataToLastTrial({
+                  q_short: "browser",
+                  question: "What internet browser are you using?",
+                  choices: " 1) Firefox"+
+                            " 2) Google Chrome"+
+                            " 3) Internet Explorer"+
+                            " 4) Safari"+
+                            " 5) Microsoft Edge"+
+                            " 6) Other" ,
+                  exp_stage:"question",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "main"
+                })
+              }
+            };
+            timeline.push(browser);
+
+
+// ////////////////////////////////////////////////// ONLY NEED TO ASK ONCE //////////////////////////////////////////////////
+// // question - gender
+//               var gender= {
+//                 type:'survey-multi-choice',
+//                 questions: [
+//                   {prompt: "What is your gender identity?",
+//                     options: [
+//                             " 1) Female/Woman",
+//                             " 2) TransFemale/TransWoman",
+//                             " 3) Male/Man",
+//                             " 4) TransMale/TransMan",
+//                             " 5) Genderqueer/Gender nonconforming",
+//                           ],
+//                     required: true,
+//                         }
+//                 ],
+//               required: true,
+//               on_finish: function(data) {
+//
+//                 q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                 console.log(q_num + '_' + q_num/num_q_all)
+//                 jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                 var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                 var answer1 = JSON.parse(dat1.responses).Q0;
+//                 data.answer = answer1;
+//                 jsPsych.data.addDataToLastTrial({
+//                   q_short: "gender",
+//                question: "What is your gender identity?",
+//                choices: " 1) Female/Woman"+
+//                             " 2) TransFemale/TransWoman"+
+//                             " 3) Male/Man"+
+//                             " 4) TransMale/TransMan"+
+//                             " 5) Genderqueer/Gender nonconforming",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             };
+//             timeline.push(gender);
+//
+// // question - english as a first language
+//               var english= {
+//                 type:'survey-multi-choice',
+//                 questions: [
+//                   {prompt: "Is English your first language (taught by primary caregiver as a toddler/young child)",
+//                     options: [
+//                             " 1) Yes, English was my only first language",
+//                             " 2) Yes, but I was also taught other languages (e.g. raised in a multilingual home)",
+//                             " 3) No, I learned English as a child (grade school or younger)",
+//                             " 4) No, I learned English as an adolescent (high school years)",
+//                             " 5) No, I learned English as an adult",
+//                           ],
+//                     required: true,
+//                         }
+//                 ],
+//               required: true,
+//               on_finish: function(data) {
+//
+//                 q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                 jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                 var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                 var answer1 = JSON.parse(dat1.responses).Q0;
+//                 data.answer = answer1;
+//                 jsPsych.data.addDataToLastTrial({
+//                   q_short: "english",
+//                  question: "Is English your first language (taught by primary caregiver as a toddler/young child)",
+//                  choices:          " 1) Yes, English was my only first language"+
+//                             " 2) Yes, but I was also taught other languages (e.g. raised in a multilingual home)"+
+//                             " 3) No, I learned English as a child (grade school or younger)"+
+//                             " 4) No, I learned English as an adolescent (high school years)"+
+//                             " 5) No, I learned English as an adult",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             };
+//             timeline.push(english);
+//
+// // question - race/ethnicity
+//               var race = {
+//                 type:'survey-multi-select',
+//                 questions: [
+//                   {prompt: "What is your race/ethnic heritage? (Please do not select more than 4 options) ",
+//                     options: [
+//                             " American Indian/Alaska Native",
+//                             " White/Caucasian",
+//                             " Black and/or African American",
+//                             " Asian",
+//                             " Native Hawaiian/Pacific Islander",
+//                             " Hispanic/Latino",
+//                             " Unsure"
+//                           ],
+//                     required: true,
+//                         }
+//                 ],
+//               required: true,
+//               on_finish: function(data) {
+//                 var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                 var answer1 = JSON.parse(dat1.responses).Q0;
+//                 data.answer = answer1;
+//
+//                 q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                 jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                 jsPsych.data.addDataToLastTrial({
+//                   q_short: "race",
+//                  question: "What is your race/ethnic heritage? (Please do not select more than 4 options) ",
+//                choices:   " American Indian/Alaska Native"+
+//                             " White/Caucasian"+
+//                             " Black and/or African American"+
+//                             " Asian"+
+//                             " Native Hawaiian/Pacific Islander"+
+//                             " Hispanic/Latino"+
+//                             " Unsure",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             };
+//             timeline.push(race);
+//
+// // question - handedness
+//               var hand = {
+//                 type:'survey-multi-choice',
+//                 questions: [
+//                   {prompt: " What is your overall handedness?",
+//                     options: [
+//                             " 1) Strongly left",
+//                             " 2) Left",
+//                             " 3) No Preference/Ambidextrous",
+//                             " 4) Right",
+//                             " 5) Strongly right",
+//                           ],
+//                     required: true,
+//                         }
+//                 ],
+//               required: true,
+//               on_finish: function(data) {
+//                 var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                 var answer1 = JSON.parse(dat1.responses).Q0;
+//                 data.answer = answer1;
+//
+//                 q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                 jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                 jsPsych.data.addDataToLastTrial({
+//                   q_short: "hand",
+//                  question: " What is your overall handedness?",
+//                choices:        " 1) Strongly left"+
+//                             " 2) Left"+
+//                             " 3) No Preference/Ambidextrous"+
+//                             " 4) Right"+
+//                             " 5) Strongly right",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             };
+//             timeline.push(hand);
+//
+// // question - color vision
+//             var color = {
+//               type:'survey-multi-choice',
+//               questions: [
+//                 {prompt: " Are you partially or completely colorblind?",
+//                   options: [
+//                           " 1) No",
+//                           " 2) Yes, I have red-green colorblindness",
+//                           " 3) Yes, I have blue-yellow colorblindness",
+//                           " 4) Yes, I have total colorblindness",
+//                           " 5) Yes, but I am unsure what type it is",
+//                         ],
+//                   required: true,
+//                       }
+//               ],
+//             required: true,
+//             on_finish: function(data) {
+//               var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//               var answer1 = JSON.parse(dat1.responses).Q0;
+//               data.answer = answer1;
+//
+//               q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//               jsPsych.setProgressBar(q_num/num_q_all)
+//
+//               jsPsych.data.addDataToLastTrial({
+//                 q_short: "color",
+//                question: " Are you partially or completely colorblind?",
+//                choices:      " 1) No"+
+//                           " 2) Yes, I have red-green colorblindness"+
+//                           " 3) Yes, I have blue-yellow colorblindness"+
+//                           " 4) Yes, I have total colorblindness"+
+//                           " 5) Yes, but I am unsure what type it is",
+//                 exp_stage:"question",
+//                 primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                 exp_part: "main"
+//               })
+//             }
+//             };
+//             timeline.push(color);
+//
+// // question - highest education
+//             var edu = {
+//               type:'survey-multi-choice',
+//               questions: [
+//                 {prompt: " What is the highest level of education you have completed?",
+//                   options: [
+//                           " 1) I have no formal education",
+//                           " 2) Grade School (Grade 1-8)",
+//                           " 3) High School or GED (Grade 9-12)",
+//                           " 4) Associate Degree",
+//                           " 5) Bachelor's Degree ",
+//                           " 6) Master's Degree",
+//                           " 7) Doctoral Degreee",
+//                         ],
+//                   required: true,
+//                       }
+//               ],
+//             required: true,
+//             on_finish: function(data) {
+//               var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//               var answer1 = JSON.parse(dat1.responses).Q0;
+//               data.answer = answer1;
+//
+//               q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//               jsPsych.setProgressBar(q_num/num_q_all)
+//
+//               jsPsych.data.addDataToLastTrial({
+//                 q_short: "edu",
+//                question: " What is the highest level of education you have completed?",
+//              choices:       " 1) I have no formal education"+
+//                           " 2) Grade School (Grade 1-8)"+
+//                           " 3) High School or GED (Grade 9-12)"+
+//                           " 4) Associate Degree"+
+//                           " 5) Bachelor's Degree "+
+//                           " 6) Master's Degree"+
+//                           " 7) Doctoral Degreee",
+//                 exp_stage:"question",
+//                 primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                 exp_part: "main"
+//               })
+//             }
+//             };
+//             timeline.push(edu);
+//
+// // question - age
+//             var age = {
+//               type:'survey-text',
+//               questions: [
+//                 {prompt: "What is your age? Please enter as numerical digits only (e.g. '32')",
+//                   required: true,
+//                       }
+//               ],
+//             required: true,
+//             on_finish: function(data) {
+//               var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//               var answer1 = JSON.parse(dat1.responses).Q0;
+//               data.answer = answer1;
+//
+//               q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//               jsPsych.setProgressBar(q_num/num_q_all)
+//
+//               jsPsych.data.addDataToLastTrial({
+//                 q_short: "age",
+//                question: "What is your age? Please enter as numerical digits only (e.g. '32')",
+//                 exp_stage:"question",
+//                 primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                 exp_part: "main",
+//                 choices: "write_in",
+//               })
+//             }
+//             };
+//             timeline.push(age);
+//
+// // question - marital status
+//               var marital= {
+//                 type:'survey-multi-choice',
+//                 questions: [
+//                   {prompt: "What is your current marital status?",
+//                     options: [
+//                             " 1) Single",
+//                             " 2) Married",
+//                             " 3) Separated",
+//                             " 4) Divorced",
+//                             " 5) Widowed",
+//                             " 6) Domestic Partnership",
+//                             " 7) Other (will be asked to specify)"
+//                           ],
+//                     required: true,
+//                         }
+//                 ],
+//               required: true,
+//               on_finish: function(data){
+//               var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//               var answer1 = JSON.parse(dat1.responses).Q0;
+//               data.answer = answer1;
+//
+//               q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//               jsPsych.setProgressBar(q_num/num_q_all)
+//
+//               if(answer1.includes(' 6) Other (will be asked to specify)') == true) {
+//                 jsPsych.data.addDataToLastTrial({
+//                   flwup_reqd: "true",
+//                   q_short: "marital",
+//                   question: "What is your current marital status?",
+//                   choices:   " 1) Single"+
+//                             " 2) Married"+
+//                             " 3) Separated"+
+//                             " 4) Divorced"+
+//                             " 5) Widowed"+
+//                             " 6) Domestic Partnership"+
+//                             " 7) Other (will be asked to specify)",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               } else {
+//                 jsPsych.data.addDataToLastTrial({
+//                   flwup_reqd: "false", // flwp_reqd = followup required
+//                   q_short: "marital",
+//                   question: "What is your current marital status?",
+//                   choices:   " 1) Single"+
+//                             " 2) Married"+
+//                             " 3) Separated"+
+//                             " 4) Divorced"+
+//                             " 5) Widowed"+
+//                             " 6) Domestic Partnership"+
+//                             " 7) Other (will be asked to specify)",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             }
+//             };
+//             timeline.push(marital);
+//
+//             // if other marital status please specify
+//             var marital_flwup = {
+//                 type: 'survey-text',
+//                 questions: [
+//                   {prompt: "Please specify other marital status",
+//                     required: true
+//                   },
+//                 ],
+//                 on_finish: function(data){
+//                   var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                   var answer1 = JSON.parse(dat1.responses).Q0;
+//                   data.answer = answer1;
+//
+//                   q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                   jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                   jsPsych.data.addDataToLastTrial({
+//                     q_short: "marital_flwup",
+//                     question: "What is your current marital status?",
+//                     choices: "write_in",
+//                     exp_stage:"question",
+//                     primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                     exp_part: "main"
+//                   })
+//                 }
+//             };
+//
+//             // determines if subject answered yes/no to prev question
+//             var marital_eval = {
+//                 timeline: [marital_flwup],
+//                 conditional_function:   function() {
+//                     var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                     var answer1 = JSON.parse(dat1.responses).Q0;
+//                     if(answer1.includes('Other') == true) {
+//                         return true;
+//                     } else {
+//                         return false;
+//                     }
+//                   },
+//               };
+//             timeline.push(marital_eval)
+//
+// // question - occupation
+//             var occup= {
+//               type:'survey-multi-select',
+//               questions: [
+//                 {prompt: "What is your current occupational status? (select all that apply)",
+//                   options: [
+//                           " 1) Working full-time",
+//                           " 2) Working part-time",
+//                           " 3) Student",
+//                           " 4) Homemaker",
+//                           " 5) Retired",
+//                           " 6) Volunteer worker",
+//                           " 7) Seeking employment, laid off, etc.",
+//                           " 8) Leave of absence",
+//                           " 9) Other (will be asked to specify)"
+//                         ],
+//                   required: true,
+//                       }
+//               ],
+//             required: true,
+//             on_finish: function(data) {
+//
+//               q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//               jsPsych.setProgressBar(q_num/num_q_all)
+//
+//               var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//               var answer1 = JSON.parse(dat1.responses).Q0;
+//               console.log(answer1)
+//               data.answer = answer1;
+//
+//               if(answer1.includes(' 5) Retired') == true || answer1.includes(' 9) Other (will be asked to specify)') == true) {
+//                 jsPsych.data.addDataToLastTrial({
+//                   flwup_reqd: "true",
+//                   q_short: "occup",
+//                   question: "What is your current occupational status? (select all that apply)",
+//                   choices:  " 1) Working full-time"+
+//                           " 2) Working part-time"+
+//                           " 3) Student"+
+//                           " 4) Homemaker"+
+//                           " 5) Retired"+
+//                           " 6) Volunteer worker"+
+//                           " 7) Seeking employment, laid off, etc."+
+//                           " 8) Leave of absence"+
+//                           " 9) Other (will be asked to specify)",
+//                   exp_stage:"question",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               } else {
+//                 jsPsych.data.addDataToLastTrial({
+//                   flwup_reqd: "false", // flwp_reqd = followup required
+//                   q_short: "occup",
+//                   exp_stage:"question",
+//                   question: "What is your current occupational status? (select all that apply)",
+//                   choices:  " 1) Working full-time"+
+//                           " 2) Working part-time"+
+//                           " 3) Student"+
+//                           " 4) Homemaker"+
+//                           " 5) Retired"+
+//                           " 6) Volunteer worker"+
+//                           " 7) Seeking employment, laid off, etc."+
+//                           " 8) Leave of absence"+
+//                           " 9) Other (will be asked to specify)",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             }
+//             };
+//             timeline.push(occup);
+//
+//             // if retired when
+//             var occup_flwup_retire = {
+//               type: 'survey-text',
+//               questions: [
+//                 {prompt: "At what age did you retire?",
+//                   required: true
+//                 },
+//               ],
+//               on_finish: function(data){
+//
+//                 q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                 jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                 var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                 var answer1 = JSON.parse(dat1.responses).Q0;
+//                 data.answer = answer1;
+//                 jsPsych.data.addDataToLastTrial({
+//                   choices: "write_in",
+//                   q_short: "occup_flwup_retire",
+//                   exp_stage:"question",
+//                   question: "At which age did you retire?",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             };
+//
+//             // if other marital status please specify
+//             var occup_flwup_other = {
+//               type: 'survey-text',
+//               questions: [
+//                 {prompt: "Please specify other occupational status",
+//                   required: true
+//                 },
+//               ],
+//               on_finish: function(data){
+//
+//                 q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+//                 data.q_num = q_num
+//                 jsPsych.setProgressBar(q_num/num_q_all)
+//
+//                 var dat1 = jsPsych.data.getLastTrialData().values()[0];
+//                 var answer1 = JSON.parse(dat1.responses).Q0;
+//                 data.answer = answer1;
+//                 jsPsych.data.addDataToLastTrial({
+//                   choices: "write_in",
+//                   q_short: "occup_flwup_other",
+//                   exp_stage:"question",
+//                   question: "Please specify other occupational status",
+//                   primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+//                   exp_part: "main"
+//                 })
+//               }
+//             };
+//
+//             // determines if subject answered other to occupational question
+//             var occup_eval_other = {
+//               timeline: [occup_flwup_other],
+//               conditional_function:   function() {
+//                   var dat1 = jsPsych.data.get().filter({q_short:  'occup'}).values()[0];
+//                   var answer1 = JSON.parse(dat1.responses).Q0;
+//                   console.log(answer1)
+//                   if(answer1.includes(' 9) Other (will be asked to specify)') == true) {
+//                       return true;
+//                   } else {
+//                       return false;
+//                   }
+//                 },
+//             };
+//             timeline.push(occup_eval_other)
+//
+//             // determines if subject answered other to occupational question
+//             var occup_eval_retire = {
+//               timeline: [occup_flwup_retire],
+//               conditional_function:   function() {
+//                   var dat1 = jsPsych.data.get().filter({q_short:  'occup'}).values()[0];
+//                   var answer1 = JSON.parse(dat1.responses).Q0;
+//                   console.log(answer1)
+//                   if(answer1.includes(' 5) Retired') == true) {
+//                       return true;
+//                   } else {
+//                       return false;
+//                   }
+//                 },
+//             };
+//             timeline.push(occup_eval_retire)
+
+
+////////////////////////////////////////////////// PER SESSSION ////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////// BEHAVIOR/ MOODS /////////////////////////////////////////////////////////////////////////////////////////
+
+// how nervous
+          var nervs= {
+              type:'survey-multi-choice',
+              questions: [
+                {prompt: "How much did you feel <b>nervous</b> or <b>anxious</b> over the past 24 hours?",
+                  options: [
+                          " 1) Very slightly or not at all",
+                          " 2) A little",
+                          " 3) Moderately",
+                          " 4) Quite a bit",
+                          " 5) Extremely"
+                        ],
+                  required: true,
+                      }
+              ],
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+
+              jsPsych.data.addDataToLastTrial({
+                q_short: "nervs",
+               question: "How much did you feel <b>nervous</b> or <b>anxious</b> over the past 24 hours?",
+               choices:    " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                exp_stage:"question",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(nervs);
+
+
+// how excited/enthusiastic
+          var enthus= {
+              type:'survey-multi-choice',
+              questions: [
+                {prompt: "How much did you feel <b>excited</b> or <b>enthusiastic</b> over the past 24 hours?", // microsurvey wording
+                  options: [
+                          " 1) Very slightly or not at all",
+                          " 2) A little",
+                          " 3) Moderately",
+                          " 4) Quite a bit",
+                          " 5) Extremely"
+                        ],
+                  required: true,
+                      }
+              ],
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+
+              jsPsych.data.addDataToLastTrial({
+                q_short: "enthus",
+                exp_stage:"question",
+                 question: "How much did you feel <b>excited</b> or <b>enthusiastic</b> over the past 24 hours?",
+                 choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(enthus);
+
+// how upset
+          var upset= {
+              type:'survey-multi-choice',
+              questions: [
+                // {prompt: "How much do you feel upset right now?",
+                {prompt: "How much did you feel <b>upset</b> over the past 24 hours?",
+                  options: [
+                          " 1) Very slightly or not at all",
+                          " 2) A little",
+                          " 3) Moderately",
+                          " 4) Quite a bit",
+                          " 5) Extremely"
+                        ],
+                  required: true,
+                      }
+              ],
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+
+              jsPsych.data.addDataToLastTrial({
+                q_short: "upset",
+                exp_stage:"question",
+                 question: "How much did you feel <b>upset</b> over the past 24 hours?",
+                  choices:  " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(upset);
+
+// how irritable
+              var irrit= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much did you feel <b>irritable</b> over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "irrit",
+                    exp_stage:"question",
+                   question:  "How much did you feel <b>irritable</b> over the past 24 hours?",
+                   choices: " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(irrit);
+
+// how alert
+          var alert= {
+              type:'survey-multi-choice',
+              questions: [
+                {prompt: "How much did you feel <b>alert</b> or <b>attentive</b> right now?", //biewe
+                  options: [
+                          " 1) Very slightly or not at all",
+                          " 2) A little",
+                          " 3) Moderately",
+                          " 4) Quite a bit",
+                          " 5) Extremely"
+                        ],
+                  required: true,
+                      }
+              ],
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+
+              jsPsych.data.addDataToLastTrial({
+                q_short: "alert",
+                exp_stage:"question",
+                 question: "How much did you feel <b>alert</b> or <b>attentive</b> right now?",
+                 choices:  " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(alert);
+
+// how determined
+              var dtmnd= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much did you feel <b>determined</b> over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "dtmnd",
+                    exp_stage:"question",
+                     question: "How much did you feel <b>determined</b> over the past 24 hours?",
+                   choices:   " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(dtmnd);
+
+// how hostile
+              var hostile= {
+                  type:'survey-multi-choice',
+                  questions: [
+                      {prompt: "How much did you feel <b>angry</b> or <b>hostile</b> over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "hostile",
+                    exp_stage:"question",
+                     question: "How much did you feel <b>angry</b> or <b>hostile</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(hostile);
+
+// how happy
+              var happy= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much did you feel <b>happy</b> over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "happy",
+                    exp_stage:"question",
+                     question: "How much did you feel <b>happy</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(happy);
+
+// how sad
+              var sad= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much did you feel <b>sad</b> or <b>down</b> over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "sad",
+                    exp_stage:"question",
+                     question: "How much did you feel <b>sad</b> or <b>down</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(sad);
+
+// how relaxed
+                var relax= {
+                    type:'survey-multi-choice',
+                    questions: [
+                      {prompt: "How much did you feel <b>relaxed</b> or <b>at ease</b> over the past 24 hours?",
+                        options: [
+                                " 1) Very slightly or not at all",
+                                " 2) A little",
+                                " 3) Moderately",
+                                " 4) Quite a bit",
+                                " 5) Extremely"
+                              ],
+                        required: true,
+                            }
+                    ],
+                  on_finish: function(data) {
+
+                    q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                    jsPsych.setProgressBar(q_num/num_q_all)
+
+                    var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                    var answer1 = JSON.parse(dat1.responses).Q0;
+                    data.answer = answer1;
+
+                    jsPsych.data.addDataToLastTrial({
+                      q_short: "relax",
+                      exp_stage:"question",
+                     question:  "How much did you feel <b>relaxed</b> or <b>at ease</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                      primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      exp_part: "main"
+                    })
+                  }
+                };
+                timeline.push(relax);
+
+// how lonely
+                var lone= {
+                  type:'survey-multi-choice',
+                  questions: [
+                      {prompt: "How much did you feel <b>lonely</b> over the past 24 hours?",
+                        options: [
+                                " 1) Very slightly or not at all",
+                                " 2) A little",
+                                " 3) Moderately",
+                                " 4) Quite a bit",
+                                " 5) Extremely"
+                              ],
+                        required: true,
+                            }
+                    ],
+                  on_finish: function(data) {
+
+                    q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                    jsPsych.setProgressBar(q_num/num_q_all)
+
+                    var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                    var answer1 = JSON.parse(dat1.responses).Q0;
+                    data.answer = answer1;
+
+                    jsPsych.data.addDataToLastTrial({
+                      q_short: "lone",
+                      exp_stage:"question",
+                     question:  "How much did you feel <b>lonely</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                      primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      exp_part: "main"
+                    })
+                  }
+                };
+                timeline.push(lone);
+
+// how outgoing
+                    var outgng= {
+                        type:'survey-multi-choice',
+                        questions: [
+                          {prompt: "How much did you feel <b>outgoing</b> over the past 24 hours?",
+                            options: [
+                                    " 1) Very slightly or not at all",
+                                    " 2) A little",
+                                    " 3) Moderately",
+                                    " 4) Quite a bit",
+                                    " 5) Extremely"
+                                  ],
+                            required: true,
+                                }
+                        ],
+                      on_finish: function(data) {
+
+                        q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                        jsPsych.setProgressBar(q_num/num_q_all)
+
+                        var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                        var answer1 = JSON.parse(dat1.responses).Q0;
+                        data.answer = answer1;
+
+                        jsPsych.data.addDataToLastTrial({
+                          q_short: "outgng",
+                          exp_stage:"question",
+                     question:  "How much did you feel <b>outgoing</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                          exp_part: "main"
+                        })
+                      }
+                    };
+                    timeline.push(outgng);
+
+// how dissatisfied with self
+                        var diss_self= {
+                            type:'survey-multi-choice',
+                            questions: [
+                              {prompt: "How much did you feel <b>dissatisfied with yourself</b> over the past 24 hours?",
+                                options: [
+                                        " 1) Very slightly or not at all",
+                                        " 2) A little",
+                                        " 3) Moderately",
+                                        " 4) Quite a bit",
+                                        " 5) Extremely"
+                                      ],
+                                required: true,
+                                    }
+                            ],
+                          on_finish: function(data) {
+
+                            q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                            jsPsych.setProgressBar(q_num/num_q_all)
+
+                            var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                            var answer1 = JSON.parse(dat1.responses).Q0;
+                            data.answer = answer1;
+
+                            jsPsych.data.addDataToLastTrial({
+                              q_short: "diss_self",
+                              exp_stage:"question",
+                     question:  "How much did you feel <b>dissatisfied with yourself</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                              exp_part: "main"
+                            })
+                          }
+                        };
+                      timeline.push(diss_self);
+
+// how stressed
+              var stress= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much did you feel <b>stressed</b> over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "stress",
+                    exp_stage:"question",
+                     question:   "How much did you feel <b>stressed</b> over the past 24 hours?",
+                     choices: " 1) Very slightly or not at all"+
+                          " 2) A little"+
+                          " 3) Moderately"+
+                          " 4) Quite a bit"+
+                          " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(stress);
+
+// how well to cope with stress
+              var strs_cope= {
+                  type:'survey-multi-choice',
+                  questions: [
+                      {prompt: "If you felt stressed out over the last 24 hours, how successfully were you at managing those stressful feelings?",
+                      options: [
+                              " 0) N/A - I have not felt stressed out",
+                              " 1) Very unsuccessful",
+                              " 2) A little bit successful",
+                              " 3) Moderately successful",
+                              " 4) Very successful",
+                              " 5) Extremely successful"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "strs_cope",
+                    exp_stage:"question",
+                     question:   "If you felt stressed out over the last 24 hours, how successfully were you at managing those stressful feelings?",
+                     choices:
+                              " 0) N/A - I have not felt stressed out"+
+                              " 1) Very unsuccessful"+
+                              " 2) A little bit successful"+
+                              " 3) Moderately successful"+
+                              " 4) Very successful"+
+                              " 5) Extremely successful",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(strs_cope);
+
+// stress interference
+              var strs_intf= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much is your stress interfering with your day today?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "strs_intf",
+                    question: "How much is your stress interfering with your day today?",
+                    choices:   " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                    exp_stage:"question",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(strs_intf);
+
+// social stress
+                var strs_social= {
+                    type:'survey-multi-choice',
+                    questions: [
+                      {prompt: "How much did you feel stressed about social relationships (friends, roommate, family, partner, etc.) over the past 24 hours?",
+                        options: [
+                                " 1) Very slightly or not at all",
+                                " 2) A little",
+                                " 3) Moderately",
+                                " 4) Quite a bit",
+                                " 5) Extremely"
+                              ],
+                        required: true,
+                            }
+                    ],
+                  on_finish: function(data) {
+
+                    q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                    jsPsych.setProgressBar(q_num/num_q_all)
+
+                    var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                    var answer1 = JSON.parse(dat1.responses).Q0;
+                    data.answer = answer1;
+
+                    jsPsych.data.addDataToLastTrial({
+                      q_short: "strs_social",
+                      exp_stage:"question",
+                      question: "How much did you feel stressed about social relationships (friends, roommate, family, partner, etc.) over the past 24 hours?",
+                    choices:   " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                      primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      exp_part: "main"
+                    })
+                  }
+                };
+                timeline.push(strs_social);
+
+// work stress
+              var strs_wrk= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How much did you feel stressed about  work and/or academics (deadlines, performance, etc.) over the past 24 hours?",
+                      options: [
+                              " 1) Very slightly or not at all",
+                              " 2) A little",
+                              " 3) Moderately",
+                              " 4) Quite a bit",
+                              " 5) Extremely"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num / num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "strs_wrk",
+                    exp_stage:"question",
+                    question:"How much did you feel stressed about  work and/or academics (deadlines, performance, etc.) over the past 24 hours?",
+                    choices:   " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(strs_wrk);
+
+// other stress
+                  var strs_other= {
+                      type:'survey-multi-choice',
+                      questions: [
+                        {prompt: "How much did you feel stressed about other reasons (health, financials, extracurriculars, etc.) over the past 24 hours?",
+                          options: [
+                                  " 1) Very slightly or not at all",
+                                  " 2) A little",
+                                  " 3) Moderately",
+                                  " 4) Quite a bit",
+                                  " 5) Extremely"
+                                ],
+                          required: true,
+                              }
+                      ],
+                    on_finish: function(data) {
+
+                      q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                      jsPsych.setProgressBar(q_num/num_q_all)
+
+                      var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                      var answer1 = JSON.parse(dat1.responses).Q0;
+                      data.answer = answer1;
+
+                      jsPsych.data.addDataToLastTrial({
+                        q_short: "strs_other",
+                        exp_stage:"question",
+                        question:"How much did you feel stressed about other reasons (health, financials, extracurriculars, etc.) over the past 24 hours?",
+                    choices:   " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "main"
+                      })
+                    }
+                  };
+                  timeline.push(strs_other);
+
+  ////////////////////////////////////////////////// CONSUMPTION/HABITS/STATUS  //////////////////////////////////////////////////////////////////////////////////////
+
+  // ill or discomfort
+            var ill = {
+                type:'survey-multi-choice',
+                questions: [
+                  {prompt: "How much did you feel sick, ill, or in physical discomfort in the past 24 hours?", // microsurvey q4 wording
+                    options: [
+                            " 1) I felt unusually healthy",
+                            " 2) I felt normal",
+                            " 3) I felt a little under the weather or uncomfortable but went about my normal activities",
+                            " 4) I felt sick but tried to do a few important things",
+                            " 5) I felt too sick to do anything"
+                          ],
+                    required: true,
+                        }
+                ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "ill",
+                    exp_stage:"question",
+                    question: "How much did you feel sick, ill, or in physical discomfort in the past 24 hours?",
+                    choices: " 1) I felt unusually healthy"+
+                            " 2) I felt normal"+
+                            " 3) I felt a little under the weather or uncomfortable but went about my normal activities"+
+                            " 4) I felt sick but tried to do a few important things"+
+                            " 5) I felt too sick to do anything",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(ill);
+
+// menstruating
+          var period= {
+            type:'survey-multi-choice',
+            questions: [
+              {prompt: "Are you menstruating today?",
+                options: [
+                        " 0) Not Applicable",
+                        " 1) No",
+                        " 2) Uncertain - maybe just beginning",
+                        " 3) Yes with light flow",
+                        " 4) Yes with medium flow",
+                        " 5) Yes with heavy flow",
+                      ],
+                required: true,
+                    }
+            ],
+          required: true,
+          on_finish: function(data) {
+
+            q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+            jsPsych.setProgressBar(q_num/num_q_all)
+
+            var dat1 = jsPsych.data.getLastTrialData().values()[0];
+            var answer1 = JSON.parse(dat1.responses).Q0;
+            data.answer = answer1;
+            jsPsych.data.addDataToLastTrial({
+              q_short: "period",
+              exp_stage:"question",
+              question: "Are you menstruating today?",
+              choices:   " 0) Not Applicable"+
+                        " 1) No"+
+                        " 2) Uncertain - maybe just beginning"+
+                        " 3) Yes with light flow"+
+                        " 4) Yes with medium flow"+
+                        " 5) Yes with heavy flow",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "main"
+            })
+          }
+        };
+        timeline.push(period);
+
+// energy level
+          var energy = {
+              type:'survey-multi-choice',
+              questions: [
+                {prompt: "How would you guage your energy level today?", //Beiwe survey
+                  options: [
+                          " 1) Little energy or motivation to do much of anything",
+                          " 2) Enough energy to get by but not enough to be very productive",
+                          " 3) Typical energy level with usual productivity",
+                          " 4) Plenty of energy to be even more productive than usual",
+                          " 5) Unusually high energy feeling hyper or even agitated at times"
+                        ],
+                  required: true,
+                      }
+              ],
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+              data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+
+              jsPsych.data.addDataToLastTrial({
+                q_short: "energy",
+                exp_stage:"question",
+                question: "How would you guage your energy level today?",
+                choices:   " 1) Little energy or motivation to do much of anything"+
+                          " 2) Enough energy to get by but not enough to be very productive"+
+                          " 3) Typical energy level with usual productivity"+
+                          " 4) Plenty of energy to be even more productive than usual"+
+                          " 5) Unusually high energy feeling hyper or even agitated at times",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(energy);
+
+// how active
+            var activ= {
+              type:'survey-multi-choice',
+              questions: [
+                {prompt: "How much were you physically active during the past 24 hours?",
+                  options: [
+                          " 1) Very slightly or not at all",
+                          " 2) A little",
+                          " 3) Moderately",
+                          " 4) Quite a bit",
+                          " 5) Extremely",
+                        ],
+                  required: true,
+                      }
+              ],
+            required: true,
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+              jsPsych.data.addDataToLastTrial({
+                q_short: "activ",
+                exp_stage:"question",
+                question: "How much were you physically active during the past 24 hours?",
+                choices: " 1) Very slightly or not at all"+
+                              " 2) A little"+
+                              " 3) Moderately"+
+                              " 4) Quite a bit"+
+                              " 5) Extremely",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(activ);
+
+// sleep quality
+            var sleep= {
+                type:'survey-multi-choice',
+                questions: [
+                  {prompt: "How did you sleep last night?",
+                    options: [
+                            " 1) Terribly: little or no sleep",
+                            " 2) Not so well: got some sleep but not enough",
+                            " 3) Sufficient: got enough sleep to function",
+                            " 4) Good: got a solid night's sleep and feel well-rested",
+                            " 5) Exceptional: one of my best nights of sleep"
+                          ],
+                    required: true,
+                        }
+                ],
+              on_finish: function(data) {
+
+                q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                jsPsych.setProgressBar(q_num/num_q_all)
+
+                var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                var answer1 = JSON.parse(dat1.responses).Q0;
+                data.answer = answer1;
+                jsPsych.data.addDataToLastTrial({
+                  q_short: "sleep",
+                  exp_stage:"question",
+                  question:  "How did you sleep last night?",
+                  choices:                             " 1) Terribly: little or no sleep"+
+                            " 2) Not so well: got some sleep but not enough"+
+                            " 3) Sufficient: got enough sleep to function"+
+                            " 4) Good: got a solid night's sleep and feel well-rested"+
+                            " 5) Exceptional: one of my best nights of sleep",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "main"
+                })
+              }
+            };
+            timeline.push(sleep);
+
+// phone checks
+              var phone= {
+                  type:'survey-multi-choice',
+                  questions: [
+                    {prompt: "How many times did you check your phone last night during your intended sleep time?",
+                      options: [
+                              " 1) Not at all",
+                              " 2) One time",
+                              " 3) Two times",
+                              " 4) Three to five times",
+                              " 5) More than five times"
+                            ],
+                      required: true,
+                          }
+                  ],
+                on_finish: function(data) {
+
+                  q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                  jsPsych.setProgressBar(q_num/num_q_all)
+
+                  var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                  var answer1 = JSON.parse(dat1.responses).Q0;
+                  data.answer = answer1;
+                  jsPsych.data.addDataToLastTrial({
+                    q_short: "phone",
+                    exp_stage:"question",
+                    question: "How many times did you check your phone last night during your intended sleep time?",
+                    choices:                               " 1) Not at all"+
+                              " 2) One time"+
+                              " 3) Two times"+
+                              " 4) Three to five times"+
+                              " 5) More than five times",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "main"
+                  })
+                }
+              };
+              timeline.push(phone);
+
+// how much to eat
+                    var eat_today= {
+                      type:'survey-multi-choice',
+                      questions: [
+                        {prompt: "How much did you eat today",
+                          options: [
+                                  " 1) Almost nothing at all",
+                                  " 2) Less than I should have",
+                                  " 3) Typical amount",
+                                  " 4) I overate",
+                                  " 5) Extreme overeating including food binge",
+                                ],
+                          required: true,
+                              }
+                      ],
+                    required: true,
+                    on_finish: function(data) {
+
+                      q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                      jsPsych.setProgressBar(q_num/num_q_all)
+
+                      var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                      var answer1 = JSON.parse(dat1.responses).Q0;
+                      data.answer = answer1;
+                      jsPsych.data.addDataToLastTrial({
+                        q_short: "eat_today",
+                        exp_stage:"question",
+                        question: "How much did you eat today",
+                        choices:                                   " 1) Almost nothing at all"+
+                                  " 2) Less than I should have"+
+                                  " 3) Typical amount"+
+                                  " 4) I overate"+
+                                  " 5) Extreme overeating including food binge",
+                        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "main"
+                      })
+                    }
+                  };
+                  timeline.push(eat_today);
+
+// how healthy did you eat
+                    var eat_health= {
+                      type:'survey-multi-choice',
+                      questions: [
+                        {prompt: "How healthfully do you feel you ate today?",
+                          options: [
+                                  " 0) N/A - I did not eat today,",
+                                  " 1) Only unhealthy foods",
+                                  " 2) Mostly unhealthy foods",
+                                  " 3) Some healthy food and some unhealthy foods",
+                                  " 4) Mostly healthy foods",
+                                  " 5) Only healthy foods",
+                                ],
+                          required: true,
+                              }
+                      ],
+                    required: true,
+                    on_finish: function(data) {
+
+                      q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                      jsPsych.setProgressBar(q_num/num_q_all)
+
+                      var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                      var answer1 = JSON.parse(dat1.responses).Q0;
+                      data.answer = answer1;
+                      jsPsych.data.addDataToLastTrial({
+                        q_short: "eat_health",
+                        exp_stage:"question",
+                        question: "How healthfully do you feel you ate today?",
+                        choices:     " 0) N/A - I did not eat today,"+
+                                  " 1) Only unhealthy foods"+
+                                  " 2) Mostly unhealthy foods"+
+                                  " 3) Some healthy food and some unhealthy foods"+
+                                  " 4) Mostly healthy foods"+
+                                  " 5) Only healthy foods",
+                        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "main"
+                      })
+                    }
+                  };
+                  timeline.push(eat_health);
+
+// how much caffeine
+                      var caffeine= {
+                        type:'survey-multi-choice',
+                        questions: [
+                          {prompt: "In the past 24 hours, how much caffeine (e.g. coffee, tea, soft drink) did you consume?",
+                            options: [
+                                    " 1) None",
+                                    " 2) One cup of coffee, tea, or soft drink (8oz)",
+                                    " 3) Two cups of coffee, tea, or soft drink (16oz)",
+                                    " 4) Three cups of coffee, tea, or soft drink (24oz)",
+                                    " 5) Four or more cups of coffee, tea, or soft drink (32+oz)",
+                                  ],
+                            required: true,
+                                }
+                        ],
+                      required: true,
+                      on_finish: function(data) {
+
+                        q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+                        jsPsych.setProgressBar(q_num/num_q_all)
+
+                        var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                        var answer1 = JSON.parse(dat1.responses).Q0;
+                        data.answer = answer1;
+                        jsPsych.data.addDataToLastTrial({
+                          q_short: "caffeine",
+                          exp_stage:"question",
+                          question: "In the past 24 hours, how much caffeine (e.g. coffee, tea, soft drink) did you consume?",
+                          choices:   " 1) None"+
+                                    " 2) One cup of coffee, tea, or soft drink (8oz)"+
+                                    " 3) Two cups of coffee, tea, or soft drink (16oz)"+
+                                    " 4) Three cups of coffee, tea, or soft drink (24oz)"+
+                                    " 5) Four or more cups of coffee, tea, or soft drink (32+oz)",
+                          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                          exp_part: "main"
+                        })
+                      }
+                    };
+                    timeline.push(caffeine);
+
+// how much alcohol
+                      var alcohol= {
+                        type:'survey-multi-choice',
+                        questions: [
+                          {prompt: "In the past 24 hours, how much alcohol did you consume?",
+                            options: [
+                                    " 1) None",
+                                    " 2) One alcoholic drink",
+                                    " 3) Two alcoholic drinks",
+                                    " 4) Three or four alcoholic drinks",
+                                    " 5) Five or more alcoholic drinks",
+                                  ],
+                            required: true,
+                                }
+                        ],
+                      required: true,
+                      on_finish: function(data) {
+
+                        q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                        data.q_num = q_num
+                        jsPsych.setProgressBar(q_num/num_q_all)
+
+                        var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                        var answer1 = JSON.parse(dat1.responses).Q0;
+                        data.answer = answer1;
+                        jsPsych.data.addDataToLastTrial({
+                          q_short: "alcohol",
+                          exp_stage:"question",
+                          question: "In the past 24 hours, how much alcohol did you consume?",
+                          choices:  " 1) None"+
+                                    " 2) One alcoholic drink"+
+                                    " 3) Two alcoholic drinks"+
+                                    " 4) Three or four alcoholic drinks"+
+                                    " 5) Five or more alcoholic drinks",
+                          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                          exp_part: "main"
+                        })
+                      }
+                    };
+                    timeline.push(alcohol);
+
+// how many cigarettes
+                      var cigs= {
+                        type:'survey-multi-choice',
+                        questions: [
+                          {prompt: "In the past 24 hours, how many cigarettes/cigars did you smoke?",
+                            options: [
+                                    " 1) None",
+                                    " 2) Four or less",
+                                    " 3) Five to ten",
+                                    " 4) Eleven to twenty",
+                                    " 5) Twenty-one or more",
+                                  ],
+                            required: true,
+                                }
+                        ],
+                      required: true,
+                      on_finish: function(data) {
+
+                        q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                        data.q_num = q_num
+                        jsPsych.setProgressBar(q_num/num_q_all)
+
+                        var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                        var answer1 = JSON.parse(dat1.responses).Q0;
+                        data.answer = answer1;
+                        jsPsych.data.addDataToLastTrial({
+                          q_short: "cigs",
+                          exp_stage:"question",
+                          question: "In the past 24 hours, how many cigarettes/cigars did you smoke?",
+                          choices:   " 1) None"+
+                                    " 2) Four or less"+
+                                    " 3) Five to ten"+
+                                    " 4) Eleven to twenty"+
+                                    " 5) Twenty-one or more",
+                          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                          exp_part: "main"
+                        })
+                      }
+                    };
+                    timeline.push(cigs);
+
+// how much vaping
+                      var vape= {
+                        type:'survey-multi-choice',
+                        questions: [
+                          {prompt: "In the past 24 hours, when was the last time you used a vape pen (e-cigarette or similar)?",
+                            options: [
+                                  " 0) I have never used a vape and/or e-cigarette",
+                                  " 1) In the last hour",
+                                  " 2) Two to four hours ago",
+                                  " 3) Four to twelve hours ago",
+                                  " 4) Twelve to twenty-four hours ago",
+                                  " 5) Two to five days ago",
+                                  " 6) Five or more days ago",
+                                  ],
+                            required: true,
+                                }
+                        ],
+                      required: true,
+                      on_finish: function(data) {
+
+                        q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                        data.q_num = q_num
+                        jsPsych.setProgressBar(q_num/num_q_all)
+
+                        var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                        var answer1 = JSON.parse(dat1.responses).Q0;
+                        data.answer = answer1;
+                        jsPsych.data.addDataToLastTrial({
+                          q_short: "cigs",
+                          exp_stage:"question",
+                          question:  "In the past 24 hours, when was the last time you used a vape pen (e-cigarette or similar)?",
+                          choices: " 0) I have never used a vape and/or e-cigarette"+
+                                  " 1) In the last hour"+
+                                  " 2) Two to four hours ago"+
+                                  " 3) Four to twelve hours ago"+
+                                  " 4) Twelve to twenty-four hours ago"+
+                                  " 5) Two to five days ago"+
+                                  " 6) Five or more days ago",
+                          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                          exp_part: "main"
+                        })
+                      }
+                    };
+                    timeline.push(vape);
+
+// drugs when
+                        var drug_when= {
+                          type:'survey-multi-choice',
+                          questions: [
+                            {prompt: "When was the last time you consumed any drugs (marijuana, recreational pills, etc.)?",
+                              options: [
+                                      " 0) I have never consumed drugs",
+                                      " 1) In the last four hours",
+                                      " 2) Four to twelve hours ago",
+                                      " 3) Twelve to twenty four hours ago",
+                                      " 4) One to two days ago",
+                                      " 5) Two to five days ago",
+                                      " 6) Five or more days ago",
+                                    ],
+                              required: true,
+                                  }
+                          ],
+                        required: true,
+                        on_finish: function(data) {
+
+                          q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                          data.q_num = q_num
+                          jsPsych.setProgressBar(q_num/num_q_all)
+
+                          var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                          var answer1 = JSON.parse(dat1.responses).Q0;
+                          data.answer = answer1;
+                          jsPsych.data.addDataToLastTrial({
+                            q_short: "drug_when",
+                            exp_stage:"question",
+                            question: "When was the last time you consumed any drugs (marijuana, recreational pills, etc.)?",
+                            choices:   " 0) I have never consumed drugs"+
+                                      " 1) In the last four hours"+
+                                      " 2) Four to twelve hours ago"+
+                                      " 3) Twelve to twenty four hours ago"+
+                                      " 4) One to two days ago"+
+                                      " 5) Two to five days ago"+
+                                      " 6) Five or more days ago",
+                            primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                            exp_part: "main"
+                          })
+                        }
+                      };
+                      timeline.push(drug_when);
+
+// drugs how much
+                      var drug_much= {
+                        type:'survey-multi-choice',
+                        questions: [
+                          {prompt: "The last time you consumed drugs (marijuana, recreational pills, etc.), how impaired did you get?",
+                            options: [
+                                    " 0) N/A - I have never consumed drugs",
+                                    " 1) Very slightly or not at all",
+                                    " 2) A little",
+                                    " 3) Moderately",
+                                    " 4) Quite a bit",
+                                    " 5) Extremely"
+                                  ],
+                            required: true,
+                                }
+                        ],
+                      on_finish: function(data) {
+
+                        q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                        data.q_num = q_num
+                        jsPsych.setProgressBar(q_num/num_q_all)
+
+                        var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                        var answer1 = JSON.parse(dat1.responses).Q0;
+                        data.answer = answer1;
+                        jsPsych.data.addDataToLastTrial({
+                          q_short: "drug_much",
+                          exp_stage:"question",
+                          question: "The last time you consumed drugs (marijuana, recreational pills, etc.), how impaired did you get?",
+                          choices:    " 0) N/A - I have never consumed drugs"+
+                                    " 1) Very slightly or not at all"+
+                                    " 2) A little"+
+                                    " 3) Moderately"+
+                                    " 4) Quite a bit"+
+                                    " 5) Extremely",
+                          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                          exp_part: "main"
+                        })
+                      }
+                    };
+                    timeline.push(drug_much);
+
+// anything else to share
+                  var etc= {
+                      type:'survey-text',
+                      questions: [
+                        {prompt: "Please describe anything else about your physical or mental state right now that would be useful to understand your health and feelings today, including listing any new or temporary medications you are taking.",
+                          rows: 3,
+                          required: true}
+                      ],
+                    on_finish: function(data) {
+
+                      q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                      data.q_num = q_num
+                      jsPsych.setProgressBar(q_num/num_q_all)
+
+                      var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                      var answer1 = JSON.parse(dat1.responses).Q0;
+                      data.answer = answer1;
+                      jsPsych.data.addDataToLastTrial({
+                        q_short: "etc",
+                        exp_stage:"question",
+                        question: "Please describe anything else about your physical or mental state right now that would be useful to understand your health and feelings today, including listing any new or temporary medications you are taking.",
+                        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "main",
+                        choices: "write_in",
+                      })
+                    }
+                  };
+                  timeline.push(etc);
+
+// sex with another
+            var sex= {
+              type:'survey-multi-choice',
+              questions: [
+                {prompt: "Did you engage in sexual activities with another person in the last 24 hours?",
+                  options: [
+                          " 0) Prefer not to answer",
+                          " 1) No, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)",
+                          " 2) No, and I feel neutral about it (e.g. no strong feelings either way)",
+                          " 3) No, and I feel positive about it (e.g. happy, excited, glad, etc.)",
+                          " 4) Yes, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)",
+                          " 5) Yes, and I feel neutral about it (e.g. no strong feelings either way)",
+                          " 6) Yes, and I feel positive about it (e.g. happy, excited, glad, etc.)",
+                        ],
+                  required: true,
+                      }
+              ],
+            required: true,
+            on_finish: function(data) {
+
+              q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+              jsPsych.setProgressBar(q_num/num_q_all)
+
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              data.answer = answer1;
+              jsPsych.data.addDataToLastTrial({
+                q_short: "sex",
+                exp_stage:"question",
+                question: "Did you engage in sexual activities with another person in the last 24 hours?",
+                choices:   " 0) Prefer not to answer"+
+                          " 1) No, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)"+
+                          " 2) No, and I feel neutral about it (e.g. no strong feelings either way)"+
+                          " 3) No, and I feel positive about it (e.g. happy, excited, glad, etc.)"+
+                          " 4) Yes, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)"+
+                          " 5) Yes, and I feel neutral about it (e.g. no strong feelings either way)"+
+                          " 6) Yes, and I feel positive about it (e.g. happy, excited, glad, etc.)",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(sex);
+
+// masturbation
+          var mstrbt= {
+            type:'survey-multi-choice',
+            questions: [
+              {prompt: "Did you engage in sexual activities by yourself (e.g. masturbation) in the last 24 hours?",
+                options: [
+                        " 0) Prefer not to answer",
+                        " 1) No, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)",
+                        " 2) No, and I feel neutral about it (e.g. no strong feelings either way)",
+                        " 3) No, and I feel positive about it (e.g. happy, excited, glad, etc.)",
+                        " 4) Yes, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)",
+                        " 5) Yes, and I feel neutral about it (e.g. no strong feelings either way)",
+                        " 6) Yes, and I feel positive about it (e.g. happy, excited, glad, etc.)",
+                      ],
+                required: true,
+                    }
+            ],
+          required: true,
+          on_finish: function(data) {
+
+            q_num = jsPsych.data.get().filter({exp_stage: 'question'}).count() + 2
+                data.q_num = q_num
+            console.log(q_num + '_' + q_num/num_q_all)
+            jsPsych.setProgressBar(q_num/num_q_all)
+
+            var dat1 = jsPsych.data.getLastTrialData().values()[0];
+            var answer1 = JSON.parse(dat1.responses).Q0;
+            data.answer = answer1;
+            jsPsych.data.addDataToLastTrial({
+              q_short: "mstrbt",
+              exp_stage:"question",
+              question: "Did you engage in sexual activities by yourself (e.g. masturbation) in the last 24 hours?",
+              choices:  " 0) Prefer not to answer"+
+                        " 1) No, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)"+
+                        " 2) No, and I feel neutral about it (e.g. no strong feelings either way)"+
+                        " 3) No, and I feel positive about it (e.g. happy, excited, glad, etc.)"+
+                        " 4) Yes, and I feel negative about it (e.g. sad, bad, guilty, angry, etc.)"+
+                        " 5) Yes, and I feel neutral about it (e.g. no strong feelings either way)"+
+                        " 6) Yes, and I feel positive about it (e.g. happy, excited, glad, etc.)",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "main"
+            })
+          }
+        };
+        timeline.push(mstrbt);
+
+
+
+//////////////////////////////////////   END QUESTIONS   //////////////////////////////////////////////
+
+          var end_intro = {
+            type: 'html-keyboard-response',
+            stimulus: '<p>Thank you! This marks the end of the intro survey.</p> <p>Press any key to continue.</p>',
+            on_finish: function(data) {
+
+              var interaction_data = jsPsych.data.getInteractionData();
+              data.screen = interaction_data.json();
+
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"exp_end",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "main"
+              })
+            }
+          };
+          timeline.push(end_intro)
+
+
+// save data to CSV
+          function saveData_csv(name, data){
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'save_data.php');
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({filename: name, filedata: data}));
+          }
+
+// Save csv to server
+        var save_data = {
+          type: 'call-function',
+          func: function(){ saveData_csv(subjectId + '_' + weekId + '_' + expId, jsPsych.data.get().csv());
+          },
+          timing_post_trial: 0,
+          on_finish: function(data) {
+            jsPsych.data.addDataToLastTrial({
+              exp_stage:"save_CSV",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "save"
+            })
+          }
+        };
+        timeline.push(save_data);
+        console.log('csv save successful')
+
+// "dashboard" - allows a rest before proceeding
+            var dash_to_task = {
+              type: "html-button-response",
+              stimulus:
+                '<div id="blue"> ' +
+                '<div id="title">' +
+                "<h1>DASHBOARD</h1>" +
+                "<h3>If you need to take a brief rest between tasks please do so now.</h3>" +
+                "<h2>Click the button below to proceed to the next task.</h2>" +
+                "<h4>Note: you will not be paid for the time you spend on this page.</h4>" +
+                "</div> " +
+                "</div>",
+              button_html: '<button style="height:75px;width:400px;background-color:powderblue">%choice%</button>',
+              choices: ["<h1>" + nextTask_name + "</h1>"],
+              on_finish: function(data) {
+
+                var interaction_data = jsPsych.data.getInteractionData();
+                data.screen = interaction_data.json();
+
+                jsPsych.data.addDataToLastTrial({
+                  exp_stage:"dashboard",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  task_selected: nextTask_Id,
+                  exp_part: "dash"
+                })
+              }
+            }
+            timeline.push(dash_to_task)
+
+  // database save
+          function saveData() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'write_data_intro.php'); // change 'write_data.php' to point to php script.
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onload = function() {
+              console.log('xhr response text coming up')
+              console.log(xhr.responseText);
+              if(xhr.status == 200){
+                var response = JSON.parse(xhr.responseText);
+                console.log(xhr.responseText);
+                console.log(response.success);
+              }
+            };
+            xhr.send(jsPsych.data.get().json());
+            console.log('function finished well')
+          };
+
+          var db_save = {
+          type: 'call-function',
+          func: saveData,
+          on_finish: function(data) {
+            jsPsych.data.addDataToLastTrial({
+              exp_stage:"save_database",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "save"
+              })
+            }
+          };
+          timeline.push(db_save)
+
+// data saving time
+              var save_wait_1 = {
+                type: 'html-keyboard-response',
+                stimulus: "<p> You're doing great!</p>" +
+                '<p> Please wait several seconds while we save your data and load the next game.</p>' +
+                '<p> You will be automatically redirected to the next page momentarily.</p>',
+                choices: [jsPsych.NO_KEYS],
+                trial_duration: 6000,
+                response_ends_trial: false,
+                on_finish: function(data) {
+                  jsPsych.data.addDataToLastTrial({
+                    exp_stage:"save_wait",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "save"
+                  })
+                }
+              };
+
+              timeline.push(save_wait_1)
+
+
+// run all and save
+            jsPsych.init({
+              timeline: timeline,
+              show_progress_bar: true,
+              auto_update_progress_bar: false,
+                // on_finish: function() {              // for testing purposes
+                //   jsPsych.data.displayData();
+                //   jsPsych.data.get().localSave('csv','intro_q.csv')}
+                on_finish: function() {window.location.href = "dp.html" + '?workerId=' + subjectId + '&hitId=' + hitId + '&assignmentId=' + assignmentId}
+            //
+            });
+          </script>
+        </html>
