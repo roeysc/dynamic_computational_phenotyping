@@ -1,0 +1,1 @@
+For these models, it's best not to have the "choice_itc" and other data variables have a lower=-1 boundary, because when we simulate data, the missing trials are replaces with -2, which would throw an error if such a boundary is explicitly made in the Stan code.
