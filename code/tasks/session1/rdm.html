@@ -1,0 +1,1710 @@
+<!DOCTYPE html>
+  <html>
+    	<head>
+        <title>Dot Motion Game</title>
+    		<script src="jspsych-6.0.5/jspsych.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-RDK-mod.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-multi-choice.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-survey-text.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-html-button-response.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-external-html.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-call-function.js"></script>
+    		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    		<script src='jspsych-6.0.5/plugins/jspsych-survey-text.js'></script>
+    		<link rel="stylesheet" href="jspsych-6.0.5/css/jspsych_nc.css"></link>
+    		<link rel='stylesheet' type='text/css' href='jspsych-6.0.5/css/jspsych_nc.css'>
+    		<link rel="stylesheet" href="jspsych-6.0.5/css/style.css"></link>
+    	</head>
+    	<body></body>
+    	<script>
+
+// timeline start //
+          timeline = []; // start timeline
+
+// quick change variables //
+
+          comp_code = "AJFHBG897" // mturk completion code if you use it, we didn't
+
+          num_trials_practice = 16; //number of trials in the practice block must be a multiple of 8 (number of timeline variables)
+          num_trials_main = 96; // nuber of trials in main blocks must be a multiple of 8 (number of timeline variables)
+          num_blocks = 4; //number of experimental blocks
+          t_time = 1500; // duration of each trial
+          iti_time = 300; //inter-trial interval - gap between stimulus
+          feedback_time = 300; // duration of feedback
+          num_dots = 200; //how many dots displayed
+          coh_values = [0.05, 0.10, 0.35, 0.50]; // percent of dots that are moving coherently
+          error_rate_cap = 0.5; //an error rate greater than this will flag as suspicious
+
+          // var bonus_fraction = 20/(num_trials_main*num_blocks)
+          var bonus_fraction = 20/(num_trials_main*num_blocks);
+
+          // ignore (for centering the rdk plugin)
+          var x_center = 2
+          var y_center = 4
+
+
+    // add identifying information for primary key
+
+    			// weeks of participation
+    			var weekId = "1"; // change weekly
+    			jsPsych.data.addProperties({
+    				weekId: weekId
+    			});
+
+          // experiment id (rdm = random dot motion)
+          var expId = "rdm_" + jsPsych.randomization.randomID(8);
+          var eId = "rdm"; // mturk experiment id: (rdm = random dot motion)
+          jsPsych.data.addProperties({
+            expId: eId
+          });
+
+          // url
+          var fullurl = window.location.href;
+          jsPsych.data.addProperties({
+            url: fullurl
+          });
+
+          // get subject id from url
+          var subjectId = jsPsych.data.getURLVariable('workerId');
+          jsPsych.data.addProperties({
+            subjectId: subjectId
+          });
+
+          // get assignment id from url
+          var assignmentId = jsPsych.data.getURLVariable('assignmentId');
+          jsPsych.data.addProperties({
+            assignmentId: assignmentId
+          });
+
+          // get hit id from url
+          var hitId = jsPsych.data.getURLVariable('hitId');
+          jsPsych.data.addProperties({
+            hitId: hitId
+          });
+
+          // // for testing purposes
+  				// var subjectId =  jsPsych.randomization.randomID(5); // random subject id
+  		    // jsPsych.data.addProperties({
+  		    //   subjectId: subjectId
+  		    // });
+          //
+          // var assignmentId = "abc"; // mturk assignment id
+          // jsPsych.data.addProperties({
+          //   assignmentId: assignmentId
+          // });
+          // var hitId = "123"; // mturk hit id
+          // jsPsych.data.addProperties({
+          //   hitId: hitId
+          // });
+
+
+// fullscreen //
+          var fullscreen_rq = {
+              type: 'instructions',
+              pages: [
+                  "<p>We are about to begin. Please ensure your browser window has been expanded to full screen.</p>" +
+                  "<p>If it is not in full screen, please expand it now, and then <i>refresh the page.</i></p>",
+                ],
+                show_clickable_nav: true,
+              on_finish: function(data) {
+                jsPsych.data.addDataToLastTrial({
+                  exp_stage:"fullscreen",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "fullscreen"
+                })
+              }
+          };
+          timeline.push(fullscreen_rq)
+
+
+
+// timeline variables // - we only used left or right but originally coded ability to do left, right, up, down: (up/down is commented out)
+          var t_variables = [
+            {// condition right - coh_value[0]
+      				coherent_direction: 0,
+      				correct_choice: 39,
+              coherence: coh_values[0],
+              name: "11"
+      			},
+      			// {// condition up - coh_value[0]
+      			// 	coherent_direction: 90,
+      			// 	correct_choice: 38,
+            //   coherence: coh_values[0],
+            //   name: "12"
+      			// },
+      			{// condition left - coh_value[0]
+      				coherent_direction: 180,
+      				correct_choice: 37,
+              coherence: coh_values[0],
+              name: "13"
+      			},
+      			// {// condition down - coh_value[0]
+      			// 	coherent_direction: 270,
+      			// 	correct_choice: 40,
+            //   coherence: coh_values[0],
+            //   name: "14"
+      			// },
+            {// condition right - coh_value[1]
+              coherent_direction: 0,
+              correct_choice: 39,
+              coherence: coh_values[1],
+              name: "21"
+            },
+            // {// condition up - coh_value[1]
+            //   coherent_direction: 90,
+            //   correct_choice: 38,
+            //   coherence: coh_values[1],
+            //   name: "22"
+            // },
+            {// condition left - coh_value[1]
+              coherent_direction: 180,
+              correct_choice: 37,
+              coherence: coh_values[1],
+              name: "23"
+            },
+            // {// condition down - coh_value[1]
+            //   coherent_direction: 270,
+            //   correct_choice: 40,
+            //   coherence: coh_values[1],
+            //   name: "24"
+            // },
+            {// condition right - coh_value[2]
+              coherent_direction: 0,
+              correct_choice: 39,
+              coherence: coh_values[2],
+              name: "31"
+            },
+            // {// condition up - coh_value[2]
+            //   coherent_direction: 90,
+            //   correct_choice: 38,
+            //   coherence: coh_values[2],
+            //   name: "32"
+            // },
+            {// condition left - coh_value[2]
+              coherent_direction: 180,
+              correct_choice: 37,
+              coherence: coh_values[2],
+              name: "33"
+            },
+            // {// condition down - coh_value[2]
+            //   coherent_direction: 270,
+            //   correct_choice: 40,
+            //   coherence: coh_values[2],
+            //   name: "34"
+            // },
+            {// condition right - coh_value[3]
+              coherent_direction: 0,
+              correct_choice: 39,
+              coherence: coh_values[3],
+              name: "41"
+
+            },
+            // {// condition up - coh_value[3]
+            //   coherent_direction: 90,
+            //   correct_choice: 38,
+            //   coherence: coh_values[3],
+            //   name: "42"
+            // },
+            {// condition left - coh_value[3]
+              coherent_direction: 180,
+              correct_choice: 37,
+              coherence: coh_values[3],
+              name: "43"
+            },
+            // {// condition down - coh_value[3]
+            //   coherent_direction: 270,
+            //   correct_choice: 40,
+            //   coherence: coh_values[3],
+            //   name: "44"
+            // }
+      		];
+
+// make the block by looping through the conditions //
+          function make_block(num_trials, part, which_block='') {
+
+            //// loop through the conditions ////
+            for (i = 0; i < num_trials; i++) {
+                //// stimulus generation ////
+                var trial = {
+                  type: "RDK",
+                  number_of_dots: num_dots,
+                  RDK_type: 3,
+                  choices: [37, 39],
+                  coherent_direction: jsPsych.timelineVariable('coherent_direction'),
+                  correct_choice: jsPsych.timelineVariable('correct_choice'),
+                  trial_duration: t_time,
+                  coherence: jsPsych.timelineVariable('coherence'),
+                  response_ends_trial: true,
+                  data: {coh: jsPsych.timelineVariable('coherence'), cond_var: jsPsych.timelineVariable('name')},
+                  on_finish: function(data) {
+                    var last_trial_correct = jsPsych.data.get().values()[0].correct;
+                    var last_choice = jsPsych.data.get().values()[0].key_press;
+                    var last_time = jsPsych.data.get().values()[0].rt;
+
+                    var curr_bonus_count = jsPsych.data.get().filter({correct: true, exp_part: 'main'}).count();
+                    var curr_bonus_parsed = parseFloat(curr_bonus_count);
+
+                    var curr_bonus_function = curr_bonus_count * bonus_fraction;
+
+                    if (data.key_press == 37) {
+                      data.key_choice = "left"
+                    } else if (data.key_press == 38) {
+                      data.key_choice = "up"
+                    } else if (data.key_press == 39) {
+                      data.key_choice = "right"
+                    } else if (data.key_press == 40) {
+                      data.key_choice = "down"
+                    } else if (data.key_press == -1) {
+                      data.key_choice = "no_choice"
+                    }
+
+
+                    if (data.correct == true && part == 'main') {
+                      data.trial_bonus = bonus_fraction
+                    } else {
+                      data.trial_bonus = 0
+                    }
+
+                    data.curr_bonus = (jsPsych.data.get().select('trial_bonus').sum()).toFixed(1)
+                    // data.curr_bonus = curr_bonus_count * bonus_fraction + data.trial_bonus
+
+                    jsPsych.data.addDataToLastTrial({
+                      exp_stage: part + "_choice",
+                      primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      block: 'block_' + which_block,
+                      exp_part: part,
+                    })
+                  }
+                }
+              }; // closes for loop
+
+            // feedback
+            var feedback = {
+                  type: 'html-keyboard-response',
+                  choices: jsPsych.NO_KEYS,
+                  trial_duration: feedback_time,
+                  stimulus: function(){
+                    var last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+                    var last_choice = jsPsych.data.get().last(1).values()[0].key_press;
+                    var last_time = jsPsych.data.get().last(1).values()[0].rt;
+                    if (last_time < 250 && last_time > 0){ // too fast
+                      return "<p><font size='10' color='gold'>Too Fast</font></p>"
+                    }
+                    else if (last_choice == -1){ // too slow
+                      return "<p><font size='10' color='gold'>Too Slow</font></p>"
+                    }
+                    else { // incorrect
+                      return "<p><font size='10' color='red'>Incorrect</font></p>"
+                    }
+
+                    if (last_time < 250 && last_time > 0){ // too fast
+                      data.trial_feedback = "fast"
+                    }
+                    else if (last_choice == -1){ // too slow
+                      data.trial_feedback = "slow"
+                    }
+                    else { // incorrect
+                      data.trial_feedback = "incorrect"
+                    }
+                  },
+                  on_start: function() {
+                    document.querySelector('body').style.backgroundColor = 'gray'
+                  },
+                  on_finish: function(data) {
+                  jsPsych.data.addDataToLastTrial({
+                    exp_stage: part + "_feedback",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    block: 'block_' + which_block,
+                  })
+                }
+              };
+
+            // feedback functionality
+            var fb_eval = {  //determines if they should get feedback (slow/fast/incorrect) or move to the next trial (correct )
+              timeline: [feedback],
+              conditional_function: function() {
+                var last_trial_correct = jsPsych.data.get().last(1).values()[0].correct;
+                var last_choice = jsPsych.data.get().last(1).values()[0].key_press;
+                var last_time = jsPsych.data.get().last(1).values()[0].rt;
+                 if (last_time < 250 && last_time > 0){ // too fast
+                   return true
+                  }
+                  else if (last_choice == -1){ // too slow
+                    return true
+                  }
+                  else if (last_trial_correct == false) { // incorrect
+                    return true
+                  }
+                  else if (last_trial_correct == true && last_time > 250){ // correct
+                  return false
+                }
+              }
+            };
+
+            //// inter-trial interval (iti)/fixation point ////
+            var iti = {
+              type: 'html-keyboard-response',
+              stimulus: "<p><font size='20' color='white'>+</font></p>",
+              choices: jsPsych.NO_KEYS,
+              trial_duration: iti_time,
+              on_start: function() {
+                document.querySelector('body').style.backgroundColor = 'gray'
+              },
+              on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage: part + "_iti",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                block: 'block_' + which_block,
+              })
+            }
+          };
+
+            //// link to timeline variables and compile trial phases
+    				return {
+  					  timeline: [trial, fb_eval, iti],
+  					  timeline_variables: t_variables,
+  						data: {exp_part: part},
+  					  randomize_order: true,
+              repetitions: num_trials/t_variables.length
+  					}
+          } // closes make block function
+
+          // compute bonus at the end of the exp (main only)
+
+          				var bonus_block = {
+          					type: 'instructions',
+          					pages: function(data) {
+                      last_bonus = jsPsych.data.get().filter({exp_stage: 'main_choice'}).last(1).values()[0].curr_bonus;
+
+                      rounded_bonus = Math.round(last_bonus);
+
+                      return ['<p>This marks the end of the experiment.</p>' +
+          						'<p>You earned <b>' + rounded_bonus + ' bonus points </b>!</p>' +
+          						'<p>Thank you so much for your participation.</p>' +
+          						'<p>Press <q>Next</q> to continue to the feedback survey.</p>'];
+
+
+          					},
+          					show_clickable_nav: true,
+                    on_start: function() {
+                      document.querySelector('body').style.backgroundColor = 'white'
+                    },
+          					on_finish: function(data) {
+          						var curr_block = jsPsych.data.get().last(2).values()[0].block;
+          						data.num_ups = jsPsych.data.get().filter({key_press: 38, block: curr_block}).count()
+          						data.num_downs = jsPsych.data.get().filter({key_press: 40, block: curr_block}).count()
+          						data.num_lefts = jsPsych.data.get().filter({key_press: 37, block: curr_block}).count()
+          						data.num_rights = jsPsych.data.get().filter({key_press: 39, block: curr_block}).count()
+          						data.num_na = jsPsych.data.get().filter({key_press: -1, block: curr_block}).count()
+
+                      num_corr = jsPsych.data.get().filter({exp_stage: 'main_choice', block: curr_block, correct: true}).count() // this is for just this block
+                      data.error_block = 1 - (num_corr/num_trials_main)
+
+                      correct_oi = jsPsych.data.get().filter({exp_stage: 'main_choice', correct: true}).count() // this is for all experimental trials
+                      error_rate = 1 - (correct_oi/(4*num_trials_main))
+
+          						if (data.num_ups == num_trials_main || data.num_downs == num_trials_main || data.num_lefts == num_trials_main || data.num_rights == num_trials_main){
+          						 data.suspicious_type = 'all_one'
+          						 data.suspicious = true
+          					 }
+          					 else if (data.num_na == num_trials_main){
+          						 data.suspicious_type = 'time_outs'
+          						 data.suspicious = true
+          					 }
+          					 else if (error_rate >= error_rate_cap){
+          						 data.suspicious_type = 'error_rate'
+          						 data.suspicious = true
+          					 }
+          					 else {
+          						 data.suspicious = false
+          					 }
+
+          						data.block = curr_block // defines as this block after the filtering to determine num gos
+          						data.exp_part = 'main'
+
+          		      jsPsych.data.addDataToLastTrial({
+          		        exp_stage:"end_bonus",
+          		        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+          		      })
+          		    }
+          		};
+
+      // in between blocks
+              function make_break(percent) {
+                return {
+                  type: "html-keyboard-response",
+                  trial_duration: 60000,
+                 stimulus: function(data){
+
+                   // last_bonus = jsPsych.data.get().last(1).values()[0].curr_bonus;
+                   last_bonus = jsPsych.data.get().filter({exp_stage: 'main_choice'}).last(1).values()[0].curr_bonus;
+
+                   console.log("last_bonus: " + last_bonus)
+                   console.log("last bonus type: " + typeof(last_bonus))
+                   console.log("stringy last bonus: " + JSON.stringify(last_bonus))
+
+                   rounded_bonus = Math.round(last_bonus);
+
+                    return "<p>You have completed " + percent + "% of the task and earned <b>"+ rounded_bonus + "</b> bonus points in total!</p>" +
+                    "<p>Feel free to take a few seconds break, but not too long. This will time out after 1 minute.</p>" +
+                    "<p>Press any key to resume the task.</p>"},
+
+                    on_start: function() {
+                      document.querySelector('body').style.backgroundColor = 'white'
+                    },
+
+                   on_finish: function(data) {
+                     var curr_block = jsPsych.data.get().last(2).values()[0].block;
+                     data.num_ups = jsPsych.data.get().filter({key_press: 38, block: curr_block}).count()
+                     data.num_downs = jsPsych.data.get().filter({key_press: 40, block: curr_block}).count()
+                     data.num_lefts = jsPsych.data.get().filter({key_press: 37, block: curr_block}).count()
+                     data.num_rights = jsPsych.data.get().filter({key_press: 39, block: curr_block}).count()
+                     data.num_na = jsPsych.data.get().filter({key_press: -1, block: curr_block}).count()
+
+                     num_corr = jsPsych.data.get().filter({exp_stage: 'main_choice', block: curr_block, correct: true}).count()
+                     error_rate = 1 - (num_corr/num_trials_main)
+                     data.error_block = error_rate
+
+                     data.error_block = error_rate
+
+                     if (data.num_ups == num_trials_main || data.num_downs == num_trials_main || data.num_lefts == num_trials_main || data.num_rights == num_trials_main){
+                      data.suspicious_type = 'all_one'
+                      data.suspicious = true
+                    }
+                    else if (data.num_na == num_trials_main){
+                      data.suspicious_type = 'time_outs'
+                      data.suspicious = true
+                    }
+                    else if (error_rate >= error_rate_cap){
+                      data.suspicious_type = 'error_rate'
+                      data.suspicious = true
+                    }
+                    else {
+                      data.suspicious = false
+                    }
+
+                     data.block = curr_block // defines as this block after the filtering to determine num gos
+                     data.exp_part = 'main'
+
+                     jsPsych.data.addDataToLastTrial({
+                       exp_stage:"between_block",
+                       primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+                     })
+                   }
+                 }
+               }
+
+
+//// INTRODUCTION AND PRACTICE TRIALS ///////////////////////////////////////////////////////////////////////////////
+
+// instructions //
+        var instructions = {
+            type: 'instructions',
+            pages: [
+                '<p>Welcome to the <b>Dot Motion Game</b>!</p> <p>This game will take approximately 15 minutes to complete.</p> <p> Click the <q>Next</q> button to continue.</p>',
+
+                "<p align='left'> The dots are trying to escape! As the guard, you have to figure out which direction they're trying to escape in. </p>" +
+                "<p align='left'> You will see a series of white dots on a gray background, similar to the image below. </p> <img src='img/rdm/sample_stim.png'></img>"+
+                "<p align='left'> During the task these dots will be moving in various directions. Some of the dots will panic and just run around randomly, others will be trying to escape in one direction, either left, or right.  </p> "+
+                "<p align='left'> In each trial the number of dots panicking versus running in a coherent direction will vary. There will only ever be one coherent direction of movement. </p> "+
+                "<p align='left'> Your task is to identify which direction the non-randomly moving dots appear to be headed, <b>as quickly and accurately as possible. </b> </p>",
+
+                "<p align='left'> Please use the arrow keys on your computer/laptop keyboard to indicate the direction you believe the dots are escaping. </p>" +
+                "<p align='left'> If you press a key other than one of the arrow keys or fail to press any key, your response will be recorded as invalid. </p>" +
+                "<p align='left'> You have to mobilize the other guards quickly, and the game will time out if you take too long. </p>",
+
+                "<p align='left'> After each decision you will see a blank screen with a cross in the middle. Please look at the cross as the next trial loads.</p>" +
+                "<p align='left'> If you perform perfectly, there will be no feedback, and you will move onto the next trial. </p>" +
+                "<p align='left'> However, if you are too slow you will see a screen that says <q>Too Slow</q>, and you will want to adjust your response time for the next trial.</p>" +
+                "<p align='left'> If an arrow key is pressed accidentally before you have time to observe the dots' movement you will see a screen that says <q>Too Fast</q></p>" +
+                "<p align='left'> If you are wrong, you will see a screen that says <q>Incorrect</q> </p>",
+
+                "<p align='left'> You should try your best to perform well during this task because each time you are correct,</p>" +
+                "<p align='left'> you will gain points that correspond to a cash bonus at the end of your session.</p>" +
+                "<p align='left'> Please note that if you respond randomly or fail to respond, we reserve the right to withold your bonus. </p>" +
+                "<p align='left'> We have several built in mechanisms to flag participants who may not be playing honestly, and we manually check each participants data. </p>",
+
+                "<p align='left'> Next, you will answer some questions to make sure you understand the task. Then you will do a practice round to gain familiarity with the task.</p> "+
+                "<p align='left'> It will also give you a feel for the timing. The timing parameters will remain constant throughout the entire game.</p> " +
+                "<p align='left'> After the practice trial there will be four blocks of main trials with brief breaks in between. </p>" +
+                "<p align='left'> Please remember to leave your browser window as it is, and not exit fullscreen, minimize the window, or switch to another tab.</p>" +
+                "<p align='left'> The game does not stop once started, and changing the window may change the layout of the game.</p>"
+              ],
+            show_clickable_nav: true,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"instructions",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            }
+        };
+        timeline.push(instructions)
+
+        // instruction comprehension questions
+        var instruction_questions = {
+            type:'survey-multi-choice',
+            questions: [
+              {prompt: "How do you show which way the dots are moving?",
+                options: ["My mouse to click and hold in the direction of the dots", "The numbers 1(left), 2(right) on my keyboard", "My mouse to click the arrow buttons on the screen", "The arrow keys on my keyboard"]},
+              {prompt: "What would happen if you were to press <q>enter</q> during a trial?",
+                options: ["The task would end", "My response would be recorded as invalid", "It would pause the experiment", "Nothing would happen" ]}
+              ],
+            required: true,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"instruction_questions",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            }
+        };
+
+        timeline.push(instruction_questions);
+
+        var countdown3 = {
+            type: 'html-keyboard-response',
+            stimulus: "<p><font size='32'> Game will begin in... </font> <br> <font size='48'> 3 </font></p>",
+            choices: jsPsych.NO_KEYS,
+            trial_duration: 1000,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"practice_start_3",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            }
+        };
+        var countdown2 = {
+            type: 'html-keyboard-response',
+            stimulus: "<p><font size='32'> Game will begin in... </font> <br> <font size='48'> 2 </font></p>",
+            choices: jsPsych.NO_KEYS,
+            trial_duration: 1000,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"practice_start_2",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            }
+        };
+        var countdown1 = {
+            type: 'html-keyboard-response',
+            stimulus: "<p><font size='32'> Game will begin in... </font> <br> <font size='48'> 1 </font></p>",
+            choices: jsPsych.NO_KEYS,
+            trial_duration: 1000,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"practice_start",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            }
+        };
+        var countdown = {
+          timeline: [countdown3, countdown2, countdown1]
+        }
+
+
+        // what they see if they answered one or both questions incorrectly the first time
+        var redo_instructions = {
+            type: 'instructions',
+            pages: [
+              "<p> Hmm...Based on one or more of your answers to the previous questions, it looks as if you may not fully understand the task. </p>" +
+              "<p> If you are unable to answer the questions correctly again, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+              "<p> Please click 'Next' to return to the instructions. </p>"
+
+            ],
+            show_clickable_nav: true,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"instruction_fail_first",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            },
+        };
+
+        // what they see if they answered one or both of the questions incorrectly more than once
+        var failed_instructions = {
+            type: 'instructions',
+            pages: [
+              "<p> We're sorry, it appears as if you have failed to answer one or both of the instruction comprehension questions twice. </p>" +
+              "<p> You may not receive a bonus payment for this task </p>" +
+              "<p> <b> If you fail to answer the instruction comprehension questions a third time you may be asked to leave the study. </b></p>"
+            ],
+            show_clickable_nav: true,
+            on_finish: function(data) {
+              jsPsych.data.addDataToLastTrial({
+                exp_stage:"instruction_fail_again",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "instructions"
+              })
+            },
+        };
+
+        // evaluates question responses and loops timeline if questions are incorrect (part 3)
+        // Note: you need all three parts (next two follow) for this function to work
+        var instructions_understood3 = {
+            timeline: [failed_instructions, instructions, instruction_questions],
+            conditional_function:   function() {
+                var dat = jsPsych.data.getLastTrialData().values()[0];
+                var dat1 = jsPsych.data.getLastTrialData().values()[1];
+                var answer1 = JSON.parse(dat.responses).Q0;
+                var answer2 = JSON.parse(dat.responses).Q1;
+                if(answer1.includes('arrow keys') == true && answer2.includes('invalid') == true) {
+                    return false;
+                } else {
+                    return true;
+                }
+              },
+          };
+
+        // evaluates question responses and loops timeline if questions are incorrect (part 2)
+        var instructions_understood2 = {
+            timeline: [failed_instructions, instructions, instruction_questions, instructions_understood3],
+            conditional_function:   function() {
+                var dat = jsPsych.data.getLastTrialData().values()[0];
+                var dat1 = jsPsych.data.getLastTrialData().values()[1];
+                var answer1 = JSON.parse(dat.responses).Q0;
+                var answer2 = JSON.parse(dat.responses).Q1;
+                if(answer1.includes('arrow keys') == true && answer2.includes('invalid') == true) {
+                    return false;
+                } else {
+                    return true;
+                }
+              },
+          };
+
+        // evaluates question responses and loops timeline if questions are incorrect (part 1)
+        var instructions_understood = {
+            timeline: [redo_instructions, instructions, instruction_questions, instructions_understood2],
+            conditional_function:   function() {
+                var dat = jsPsych.data.getLastTrialData().values()[0];
+                var dat1 = jsPsych.data.getLastTrialData().values()[1];
+                var answer1 = JSON.parse(dat.responses).Q0;
+                var answer2 = JSON.parse(dat.responses).Q1;
+                if(answer1.includes('arrow keys') == true && answer2.includes('invalid') == true) {
+                    return false;
+                } else {
+                    return true;
+                }
+              },
+          };
+
+        timeline.push(instructions_understood);
+
+// practice trial //
+
+        var trial_start = {
+          type: 'html-keyboard-response',
+          stimulus: 'Press any key to start the practice trial </p>',
+          on_finish: function(data) {
+            jsPsych.data.addDataToLastTrial({
+              exp_stage:"practice_start",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "practice"
+            })
+          }
+        }
+
+// practice block //////////////////////////////////////////////////////////////////////////////////////////////////
+
+      timeline.push(countdown, make_block(num_trials_practice, 'practice', 'p'))
+
+            // timeline.push(make_block(num_trials_practice, '_p')); // run block
+
+            var end_trial = {
+        			type: 'html-keyboard-response',
+        			stimulus: '<p>This marks the end of the Practice Trial.</p> <p>Press any key to continue to the main experiment.</p>',
+              on_start: function() {
+                document.querySelector('body').style.backgroundColor = 'white'
+              },
+        			on_finish: function(data) {
+                var curr_block = jsPsych.data.get().last(2).values()[0].block;
+                num_corr = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: curr_block, correct: true}).count()
+                data.error_block = 1 - (num_corr/num_trials_practice)
+                data.num_ups = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: curr_block, key_press: 38}).count()
+                data.num_downs = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: curr_block, key_press: 40}).count()
+                data.num_lefts = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: curr_block, key_press: 37}).count()
+                data.num_rights = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: curr_block, key_press: 39}).count()
+                data.num_na = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: curr_block, key_press: -1}).count()
+
+        				jsPsych.data.addDataToLastTrial({
+                  suspicious: false,
+        					exp_stage:"practice_end",
+        					primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "practice",
+        					block: jsPsych.data.get().last(2).values()[0].block
+        				})
+        			}
+        		}
+
+        		var no_sus = {
+        			timeline: [end_trial],
+        			conditional_function:   function(data) {
+        					num_ups = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 38}).count()
+        					num_downs = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 40}).count()
+        					num_lefts = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 37}).count()
+        					num_rights = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 39}).count()
+        					num_na = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: -1}).count()
+
+        					correct_oi = jsPsych.data.get().filter({exp_stage: 'practice_choice', correct: true}).count()
+        					error_rate = 1 - (correct_oi/(num_trials_practice))
+
+        					if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        						return false;
+        					}
+        					else if (num_na ==  4*num_trials_practice){
+        						return false;
+        					}
+        					else if (error_rate >= error_rate_cap){
+        						return false;
+        					}
+        					else{
+        						return true
+        					}
+        				},
+        			on_start: function() {
+        				document.querySelector('body').style.backgroundColor = 'white'
+        			},
+        			on_finish: function(data){
+        				data.num_ups = num_ups
+        				data.num_downs = num_downs
+        				data.num_lefts = num_lefts
+        				data.num_rights = num_rights
+        				data.num_na = num_na
+        			}
+        		};
+        		timeline.push(no_sus);
+
+        		var sus_1 = {
+        			type: 'instructions',
+        			pages: function(data){
+                num_ups = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 38}).count()
+                num_downs = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 40}).count()
+                num_lefts = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 37}).count()
+                num_rights = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: 39}).count()
+                num_na = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p', key_press: -1}).count()
+
+        				if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        					return [
+        						"<p align='left'> Hmm... You only ever selected one direction of motion. It looks as if you may not fully understand the task. </p>" +
+        						"<p align='left'> If you are unable to better perform in the practice trial a second time, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        						"<p align='left'> Please click 'Next' to return to the instructions. </p>"
+        					]
+        				}
+        				else if (num_na ==  4*num_trials_practice){
+        					return [
+        						"<p align='left'> Hmm... You never pressed an arrow key to indicate the direction of motion. It looks as if you may not fully understand the task. </p>" +
+        						"<p align='left'> If you are unable to better perform in the practice trial a second time, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        						"<p align='left'> Please click 'Next' to return to the instructions. </p>"
+        					]
+        				}
+        				else if (error_rate >= error_rate_cap){
+        					return [
+        						"<p align='left'> Hmm... Your choices of direction of motion indicates that you may not fully understand the task. </p>" +
+        						"<p align='left'> If you are unable to better perform in the practice trial a second time, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        						"<p align='left'> Please click 'Next' to return to the instructions. </p>"
+        					]
+        				}
+        			},
+        			show_clickable_nav: true,
+        			on_start: function() {
+        				document.querySelector('body').style.backgroundColor = 'white'
+        			},
+        			on_finish: function(data){
+                console.log(jsPsych.data.get().csv());
+        				data.primary_key =  subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+        				data.suspicious = true
+        				data.block = "block_p"
+
+        				data.num_ups = num_ups
+        				data.num_downs = num_downs
+        				data.num_lefts = num_lefts
+        				data.num_rights = num_rights
+        				data.num_na = num_na
+
+                data.error_block = error_rate
+
+        				data.exp_stage = "practice_sus_flag"
+
+        				if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        					data.suspicious_type = 'all_one'
+        				}
+        				else if (num_na ==  4*num_trials_practice){
+        					data.suspicious_type = 'time_outs'
+        				}
+        				else {
+        					data.suspicious_type = 'error_rate'
+        				}
+
+        			}
+        		}
+
+        		var sus_2 = {
+        			type: 'instructions',
+        			pages: function(data){
+                num_ups = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p2', key_press: 38}).count()
+                num_downs = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p2', key_press: 40}).count()
+                num_lefts = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p2', key_press: 37}).count()
+                num_rights = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p2', key_press: 39}).count()
+                num_na = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p3', key_press: -1}).count()
+
+        				if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        					return [
+        						"<p align='left'> Hmm... You only ever selected one direction of motion. It looks as if you may not fully understand the task. </p>" +
+        						"<p align='left'> If you are unable to better perform in the practice trial a third time, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        						"<p align='left'> Please click 'Next' to return to the instructions. </p>"
+        					]
+        				}
+        				else if (num_na ==  4*num_trials_practice){
+        					return [
+        						"<p align='left'> Hmm... You never pressed an arrow key to indicate the direction of motion. It looks as if you may not fully understand the task. </p>" +
+        						"<p align='left'> If you are unable to better perform in the practice trial a third time, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        						"<p align='left'> Please click 'Next' to return to the instructions. </p>"
+        					]
+        				}
+        				else if (error_rate >= error_rate_cap){
+        					return [
+        						"<p align='left'> Hmm... Your choices of direction of motion indicates that you may not fully understand the task. </p>" +
+        						"<p align='left'> If you are unable to better perform in the practice trial a third time, we reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        						"<p align='left'> Please click 'Next' to return to the instructions. </p>"
+        					]
+        				}
+        			},
+        			show_clickable_nav: true,
+        			on_start: function() {
+        				document.querySelector('body').style.backgroundColor = 'white'
+        			},
+        			on_finish: function(data){
+        				data.primary_key =  subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+        				data.suspicious = true
+        				data.block = 'block_p2'
+
+        				data.num_ups = num_ups
+        				data.num_downs = num_downs
+        				data.num_lefts = num_lefts
+        				data.num_rights = num_rights
+        				data.num_na = num_na
+
+                data.error_block = error_rate
+
+        				data.exp_stage = "practice_sus_flag"
+        				if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        					data.suspicious_type = 'all_one'
+        				}
+        				else if (num_na ==  4*num_trials_practice){
+        					data.suspicious_type = 'time_outs'
+        				}
+        				else {
+        					data.suspicious_type = 'error_rate'
+        				}
+
+        			}
+        		}
+
+        		var final_bad = {
+        			type: 'instructions',
+        			pages: function(data){
+                num_ups = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p3', key_press: 38}).count()
+                num_downs = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p3', key_press: 40}).count()
+                num_lefts = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p3', key_press: 37}).count()
+                num_rights = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p3', key_press: 39}).count()
+                num_na = jsPsych.data.get().filter({exp_stage: 'practice_choice', block: 'block_p4', key_press: -1}).count()
+
+        				return [
+        					"<p align='left'> We're sorry, it appears as if you still do not fully understand the task. </p>" +
+        					"<p align='left'> We reserve the right to withold your bonus, and you may be asked to leave the study </p>" +
+        					"<p align='left'> Please click 'Next' to begin the main task. </p>"
+        				]
+
+        			},
+        			show_clickable_nav: true,
+        			on_start: function() {
+        				document.querySelector('body').style.backgroundColor = 'white'
+        			},
+        			on_finish: function(data){
+        				data.primary_key =  subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+        				data.suspicious = true
+        				data.block = 'block_p3'
+
+        				data.num_ups = num_ups
+        				data.num_downs = num_downs
+        				data.num_lefts = num_lefts
+        				data.num_rights = num_rights
+        				data.num_na = num_na
+
+                data.error_block = error_rate
+
+        				data.exp_stage = "practice_sus_flag"
+        				if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        					data.suspicious_type = 'all_one'
+        				}
+        				else if (num_na ==  4*num_trials_practice){
+        					data.suspicious_type = 'time_outs'
+        				}
+        				else {
+        					data.suspicious_type = 'error_rate'
+        				}
+
+        			}
+        		}
+
+        		var sus_procedure3 = {
+        			timeline: [final_bad],
+        			data: {exp_part: 'practice'},
+        			conditional_function:   function() {
+                num_ups = jsPsych.data.get().filter({block: 'block_p3', key_press: 38}).count()
+                num_downs = jsPsych.data.get().filter({block: 'block_p3', key_press: 40}).count()
+                num_lefts = jsPsych.data.get().filter({block: 'block_p3', key_press: 37}).count()
+                num_rights = jsPsych.data.get().filter({block: 'block_p3', key_press: 39}).count()
+                num_na = jsPsych.data.get().filter({block: 'block_p3', key_press: -1}).count()
+
+        				correct_oi = jsPsych.data.get().filter({block: "block_p3", correct: true}).count()
+        				error_rate = 1 - (correct_oi/(num_trials_practice))
+
+        				if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        					return true;
+        				}
+        				else if (num_na ==  4*num_trials_practice){
+        					return true;
+        				}
+        				else if (error_rate >= error_rate_cap){
+        					return true;
+        				}
+        				else{
+        					return false
+        				}
+        				},
+
+        		}
+
+
+        		var sus_procedure2 = {
+        				timeline: [sus_2, instructions, countdown, make_block(num_trials_practice, 'practice', 'p3'), no_sus, sus_procedure3],
+        				data: {exp_part: 'practice'},
+        				conditional_function:   function() {
+                  num_ups = jsPsych.data.get().filter({block: 'block_p2', key_press: 38}).count()
+        					num_downs = jsPsych.data.get().filter({block: 'block_p2', key_press: 40}).count()
+        					num_lefts = jsPsych.data.get().filter({block: 'block_p2', key_press: 37}).count()
+        					num_rights = jsPsych.data.get().filter({block: 'block_p2', key_press: 39}).count()
+        					num_na = jsPsych.data.get().filter({block: 'block_p2', key_press: -1}).count()
+
+        					correct_oi = jsPsych.data.get().filter({block: "block_p2", correct: true}).count()
+                  // correct_oi = jsPsych.data.get().last(4*2*num_trials_practice+1).filter({correct: true}).count()
+
+        					error_rate = 1 - (correct_oi/(num_trials_practice))
+
+        					if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        						return true;
+        					}
+        					else if (num_na ==  4*num_trials_practice){
+        						return true;
+        					}
+        					else if (error_rate >= error_rate_cap){
+        						return true;
+        					}
+        					else{
+        						return false
+        					}
+        					},
+        			};
+
+
+        		var sus_procedure = {
+        				timeline: [sus_1, instructions, countdown, make_block(num_trials_practice, 'practice', 'p2'), no_sus, sus_procedure2],
+        				data: {exp_part: 'practice'},
+        				conditional_function:   function() {
+                  num_ups = jsPsych.data.get().filter({block: 'block_p', key_press: 38}).count()
+                  num_downs = jsPsych.data.get().filter({block: 'block_p', key_press: 40}).count()
+                  num_lefts = jsPsych.data.get().filter({block: 'block_p', key_press: 37}).count()
+                  num_rights = jsPsych.data.get().filter({block: 'block_p', key_press: 39}).count()
+                  num_na = jsPsych.data.get().filter({block: 'block_p', key_press: -1}).count()
+
+        					correct_oi = jsPsych.data.get().filter({block: "block_p", correct: true}).count()
+                  console.log("correct_num: " + correct_oi)
+        					error_rate = 1 - (correct_oi/(num_trials_practice))
+                  console.log("error_rate: " + error_rate)
+
+        					if (num_ups ==  4*num_trials_practice || num_downs ==  4*num_trials_practice || num_lefts ==  4*num_trials_practice || num_rights ==  4*num_trials_practice){
+        						return true;
+        					}
+        					else if (num_na ==  4*num_trials_practice){
+        						return true;
+        					}
+        					else if (error_rate >= error_rate_cap){
+        						return true;
+        					}
+        					else{
+        						return false
+        					}
+        					},
+        			};
+
+        		timeline.push(sus_procedure);
+
+//// MAIN BLOCKS  ///////////////////////////////////////////////////////////////////////////////
+
+// all the blocks go here
+
+timeline.push(make_block(num_trials_main, 'main', 'b1'), make_break(25), make_block(num_trials_main, 'main', 'b2'), make_break(50), make_block(num_trials_main, 'main', 'b3'), make_break(75), make_block(num_trials_main, 'main', 'b4'), bonus_block);
+
+
+//// POST-EXP FEEDBACK QUIZ  ///////////////////////////////////////////////////////////////////////////////
+
+// suspicious
+
+var fb_warning_ss = {
+    type: 'instructions',
+    pages: [
+      "<p align='left'> This task has several built in alarms that signal when a worker may be trying to 'trick' at a task" +
+      "<p align='left'> (i.e. by selecting the same answer every time, or never answering at all). " +
+      "<p align='left'>  Something about your responses for part or all of this task has triggered one of these alarms." ,
+
+      "<p align='left'>  Your bonus will be witheld until an experimenter can manually review your answers to check if there was a mistake on our end, or if you did try to 'trick' the task." +
+      "<p align='left'>  In the following feedback survey, you will have the chance to explain anything that may have made your answers appear irregular. " +
+      "<p align='left'>  In the event that an honest mistake was made or our code was incorrect, you will receive your bonus as planned" +
+      "<p align='left'>  However, if it appears that you tried to 'trick' the system, we reserve the right to withold your bonus, and if cheating behavior continues you will be asked to leave the study."
+        ],
+     show_clickable_nav: true,
+     on_start: function() {
+       document.querySelector('body').style.backgroundColor = 'white'
+     },
+     on_finish: function(data) {
+      jsPsych.data.addDataToLastTrial({
+        fb_type: "suspicious",
+        exp_stage:"feedback_warning",
+        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+        exp_part: "feedback"
+      })
+    }
+  };
+
+// first question - tech problems
+      var fb_q1_ss = {
+          type: 'survey-multi-choice',
+          preamble: '<h4> Feedback Survey 1/4 </h4>',
+          questions: [
+            {prompt: "Did you experience any technological issues during this task?   (i.e. experiment glitch, accidentally closed window, mixed up keys, etc.) <br>  If you answer 'Yes' or 'I am unsure' you will have the opportunity to explain",
+              options: [" Yes", " No", " I am unsure"],
+              // horizontal: true,
+              required: true,
+              name: 'tech problems'},
+              ],
+              on_finish: function(data){
+                var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                var answer1 = JSON.parse(dat1.responses).Q0;
+                if(answer1.includes('Yes') == true || answer1.includes('unsure')) {
+                  jsPsych.data.addDataToLastTrial({
+                    fb_type: "suspicious",
+                    fb_issue:'tech',
+                    exp_stage:"feedback_tech",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+                  })
+                } else {
+                  jsPsych.data.addDataToLastTrial({
+                    fb_type: "suspicious",
+                    exp_stage:"feedback_tech",
+                    primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+                  })
+                }
+              }
+          };
+
+    // first question - tech problems - if yes, please explain
+      var fb_q1_follow_ss = {
+          type: 'survey-text',
+          preamble: '<h4> Feedback Survey 1/4 </h4>',
+          questions: [
+            {prompt: "Please tell us about the technical difficulties you experienced: ",
+              required: true,
+              name: 'tech problems follow up'},
+              ],
+              on_finish: function(data){
+                var dat1 = jsPsych.data.getLastTrialData().values()[0];
+                var answer1 = JSON.parse(dat1.responses).Q0;
+                jsPsych.data.addDataToLastTrial({
+                  fb_type: "suspicious",
+                  fb_issue: 'tech',
+                  fb_issue_txt: answer1,
+                  exp_stage:"feedback_tech_followup",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+                })
+              }
+          };
+
+    // determines if subject answered yes, and explanation is required
+      var fb_q1_eval_ss = {
+          timeline: [fb_q1_follow_ss],
+          conditional_function:   function() {
+              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+              var answer1 = JSON.parse(dat1.responses).Q0;
+              if(answer1.includes('Yes') == true || answer1.includes('unsure')) {
+                  return true;
+              } else {
+                  return false;
+              }
+            },
+        };
+
+
+// second question - distractions
+      var fb_q2_ss = {
+          type: 'survey-multi-choice',
+          preamble: '<h4> Feedback Survey 2/4 </h4>',
+          questions: [{
+              prompt: "Did you experience any major distractions or interruptions during this task? <br> If you answer 'Yes' you will have the opportunity to explain",
+              options: [" Yes", " No"],
+              required: true,
+              name: 'distractions'
+            },
+          ],
+          on_finish: function(data){
+            var dat2 = jsPsych.data.getLastTrialData().values()[0];
+            var answer2 = JSON.parse(dat2.responses).Q0;
+            if(answer2.includes('Yes') == true) {
+              jsPsych.data.addDataToLastTrial({
+                fb_type: "suspicious",
+                fb_issue:'distraction',
+                exp_stage:"feedback_distraction",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "feedback"
+              })
+            } else {
+              jsPsych.data.addDataToLastTrial({
+                fb_type: "suspicious",
+                exp_stage:"feedback_distraction",
+                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                exp_part: "feedback"
+              })
+            }
+          }
+        };
+
+    // second question - distractions - if yes, please explain
+      var fb_q2_follow_ss = {
+          type: 'survey-text',
+          preamble: '<h4> Feedback Survey 2/4 </h4>',
+          questions: [
+            {prompt: "Please describe how the distraction may have effected your performance, and if possible, at what point in the task this distraction occured:",
+              name: 'tech problems follow up'},
+              ],
+              on_finish: function(data){
+                var dat2 = jsPsych.data.getLastTrialData().values()[0];
+                var answer2 = JSON.parse(dat2.responses).Q0;
+                jsPsych.data.addDataToLastTrial({
+                  fb_type: "suspicious",
+                  fb_issue: 'distraction',
+                  fb_issue_txt: answer2,
+                  exp_stage:"feedback_distraction_followup",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+                })
+              }
+          };
+
+    // determines if subject answered yes, and explanation is required
+      var fb_q2_eval_ss = {
+          timeline: [fb_q2_follow_ss],
+          conditional_function:   function() {
+              var dat2 = jsPsych.data.getLastTrialData().values()[0];
+              var answer2 = JSON.parse(dat2.responses).Q0;
+              if(answer2.includes('Yes') == true) {
+                  return true;
+              } else {
+                  return false;
+              }
+            },
+        };
+
+
+// third question: engagement
+      var fb_q3_ss = {
+          type: 'survey-multi-choice',
+          preamble: '<h4> Feedback Survey 3/4 </h4>',
+          questions: [{
+              prompt: "On the following scale from 1 to 4, how engaging (attention holding) did you find this task?",
+              options: [" 1 - Not at all engaging", " 2 - Somewhat not engaging", " 3 - Somewhat engaging", " 4 - Very engaging"],
+              required: true,
+              name: 'engagement'
+            },
+          ],
+              on_finish: function(data){
+                var dat3 = jsPsych.data.getLastTrialData().values()[0];
+                var answer3 = JSON.parse(dat3.responses).Q0;
+                jsPsych.data.addDataToLastTrial({
+                  fb_type: "suspicious",
+                  fb_engagement: answer3,
+                  exp_stage:"feedback_engaged",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+                })
+              }
+          };
+
+// fourth question: anything else
+      var fb_q4_ss = {
+          type: 'survey-text',
+          preamble: '<h4> Feedback Survey 4/4 </h4>' +
+                    "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+          questions: [{
+              prompt: "Is there anything else you would like us to know? <br> (Can be a specific concern or general suggestion for improvement)",
+              name: 'anything else'
+            },
+          ],
+              on_finish: function(data){
+
+                var interaction_data = jsPsych.data.getInteractionData();
+                data.screen = interaction_data.json();
+
+                var dat4 = jsPsych.data.getLastTrialData().values()[0];
+                var answer4 = JSON.parse(dat4.responses).Q0;
+                if (answer4 == ''){
+                  jsPsych.data.addDataToLastTrial({
+                  fb_type: "suspicious",
+                  exp_stage:"feedback_other",
+                  fb_type: "suspicious",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+                })
+              } else {
+                jsPsych.data.addDataToLastTrial({
+                  fb_type: "suspicious",
+                  fb_issue: 'other',
+                  fb_issue_txt: answer4,
+                  exp_stage:"feedback_other",
+                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+                  })
+                }
+              }
+          };
+
+// conclusion
+      var fb_end_exp_ss = {
+        type: 'html-keyboard-response',
+        stimulus: '<p>Thank you! This marks the end of the feeback survey.</p> <p>Press any key to return to the home page.</p>',
+        on_finish: function(data) {
+
+          var interaction_data = jsPsych.data.getInteractionData();
+          data.screen = interaction_data.json();
+
+          jsPsych.data.addDataToLastTrial({
+            fb_type: "suspicious",
+            exp_stage:"exp_end",
+            primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+            exp_part: "feedback"
+          })
+        }
+      };
+
+
+		// not suspicious
+
+		var fb_warning_ns = {
+		    type: 'instructions',
+		    pages: [
+		      "<p align='left'> This task has several built in alarms that signal when a worker may be trying to 'trick' at a task" +
+		      "<p align='left'> (i.e. by selecting the same answer every time, or never answering at all). " +
+					"<p align='left'> Your responses will be manually reviewed by a researcher, however it appears you have performed the task with sincere effort. Thank you!" ,
+
+		      "<p align='left'>  In the following feedback survey, you will have the chance to explain anything that may have made your answers appear irregular. " +
+		      "<p align='left'>  In the event that an honest mistake was made or our code was incorrect, you will receive your bonus as planned" +
+		      "<p align='left'>  However, if in review it appears that you tried to 'trick' the system, we reserve the right to withold your bonus, and if cheating behavior continues you will be asked to leave the study."
+		        ],
+		     show_clickable_nav: true,
+         on_start: function() {
+           document.querySelector('body').style.backgroundColor = 'white'
+         },
+		     on_finish: function(data) {
+		      jsPsych.data.addDataToLastTrial({
+		        fb_type: "nonsuspicious",
+		        exp_stage:"feedback_warning",
+		        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+            exp_part: "feedback"
+		      })
+		    }
+		  };
+
+		// first question - tech problems
+		    var fb_q1_ns = {
+		        type: 'survey-multi-choice',
+		        preamble: '<h4> Feedback Survey 1/4 </h4>' +
+		                  "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+		        questions: [
+		          {prompt: "Did you experience any technological issues during this task?   (i.e. experiment glitch, accidentally closed window, mixed up keys, etc.) <br>  If you answer 'Yes' or 'I am unsure' you will have the opportunity to explain",
+		            options: [" Yes", " No", " I am unsure"],
+		            // horizontal: true,
+		            required: true,
+		            name: 'tech problems'},
+		            ],
+		            on_finish: function(data){
+		              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+		              var answer1 = JSON.parse(dat1.responses).Q0;
+		              if(answer1.includes('Yes') == true || answer1.includes('unsure')) {
+		                jsPsych.data.addDataToLastTrial({
+		                  fb_type: "nonsuspicious",
+		                  fb_issue:'tech',
+		                  exp_stage:"feedback_tech",
+		                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      exp_part: "feedback"
+		                })
+		              } else {
+		                jsPsych.data.addDataToLastTrial({
+		                  fb_type: "nonsuspicious",
+		                  exp_stage:"feedback_tech",
+		                  primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      exp_part: "feedback"
+		                })
+		              }
+		            }
+		        };
+
+		    // first question - tech problems - if yes, please explain
+		    var fb_q1_follow_ns = {
+		        type: 'survey-text',
+		        preamble: '<h4> Feedback Survey 1/4 </h4>' +
+		                  "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+		        questions: [
+		          {prompt: "Please tell us about the technical difficulties you experienced: ",
+		            required: true,
+		            name: 'tech problems follow up'},
+		            ],
+		            on_finish: function(data){
+		              var dat1 = jsPsych.data.getLastTrialData().values()[0];
+		              var answer1 = JSON.parse(dat1.responses).Q0;
+		              jsPsych.data.addDataToLastTrial({
+		                fb_type: "nonsuspicious",
+		                fb_issue: 'tech',
+		                fb_issue_txt: answer1,
+		                exp_stage:"feedback_tech_followup",
+		                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+		              })
+		            }
+		        };
+
+		    // determines if subject answered yes, and explanation is required
+		    var fb_q1_eval_ns = {
+		        timeline: [fb_q1_follow_ns],
+		        conditional_function:   function() {
+		            var dat1 = jsPsych.data.getLastTrialData().values()[0];
+		            var answer1 = JSON.parse(dat1.responses).Q0;
+		            if(answer1.includes('Yes') == true || answer1.includes('unsure')) {
+		                return true;
+		            } else {
+		                return false;
+		            }
+		          },
+		      };
+
+
+		// second question - distractions
+		    var fb_q2_ns = {
+		        type: 'survey-multi-choice',
+		        preamble: '<h4> Feedback Survey 2/4 </h4>' +
+		                  "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+		        questions: [{
+		            prompt: "Did you experience any major distractions or interruptions during this task? <br> If you answer 'Yes' you will have the opportunity to explain",
+		            options: [" Yes", " No"],
+		            required: true,
+		            name: 'distractions'
+		          },
+		        ],
+		        on_finish: function(data){
+		          var dat2 = jsPsych.data.getLastTrialData().values()[0];
+		          var answer2 = JSON.parse(dat2.responses).Q0;
+		          if(answer2.includes('Yes') == true) {
+		            jsPsych.data.addDataToLastTrial({
+		              fb_type: "nonsuspicious",
+		              fb_issue:'distraction',
+		              exp_stage:"feedback_distraction",
+		              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+		            })
+		          } else {
+		            jsPsych.data.addDataToLastTrial({
+		              fb_type: "nonsuspicious",
+		              exp_stage:"feedback_distraction",
+		              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                  exp_part: "feedback"
+		            })
+		          }
+		        }
+		      };
+
+		    // second question - distractions - if yes, please explain
+		    var fb_q2_follow_ns = {
+		        type: 'survey-text',
+		        preamble: '<h4> Feedback Survey 2/4 </h4>' +
+		                  "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+		        questions: [
+		          {prompt: "Please describe how the distraction may have effected your performance, and if possible, at what point in the task this distraction occured:",
+		            name: 'tech problems follow up'},
+		            ],
+		            on_finish: function(data){
+		              var dat2 = jsPsych.data.getLastTrialData().values()[0];
+		              var answer2 = JSON.parse(dat2.responses).Q0;
+		              jsPsych.data.addDataToLastTrial({
+		                fb_type: "nonsuspicious",
+		                fb_issue: 'distraction',
+		                fb_issue_txt: answer2,
+		                exp_stage:"feedback_distraction_followup",
+		                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+		              })
+		            }
+		        };
+
+		    // determines if subject answered yes, and explanation is required
+		    var fb_q2_eval_ns = {
+		        timeline: [fb_q2_follow_ns],
+		        conditional_function:   function() {
+		            var dat2 = jsPsych.data.getLastTrialData().values()[0];
+		            var answer2 = JSON.parse(dat2.responses).Q0;
+		            if(answer2.includes('Yes') == true) {
+		                return true;
+		            } else {
+		                return false;
+		            }
+		          },
+		      };
+
+
+		// third question: engagement
+		    var fb_q3_ns = {
+		        type: 'survey-multi-choice',
+		        preamble: '<h4> Feedback Survey 3/4 </h4>' +
+		                  "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+		        questions: [{
+		            prompt: "On the following scale from 1 to 4, how engaging (attention holding) did you find this task?",
+		            options: [" 1 - Not at all engaging", " 2 - Somewhat not engaging", " 3 - Somewhat engaging", " 4 - Very engaging"],
+		            required: true,
+		            name: 'engagement'
+		          },
+		        ],
+		            on_finish: function(data){
+		              var dat3 = jsPsych.data.getLastTrialData().values()[0];
+		              var answer3 = JSON.parse(dat3.responses).Q0;
+		              jsPsych.data.addDataToLastTrial({
+		                fb_type: "nonsuspicious",
+		                fb_engagement: answer3,
+		                exp_stage:"feedback_engaged",
+		                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+		              })
+		            }
+		        };
+
+		// fourth question: anything else
+		    var fb_q4_ns = {
+		        type: 'survey-text',
+		        preamble: '<h4> Feedback Survey 4/4 </h4>' +
+		                  "<h5 align='left'> Please be honest, <u> your answers will not effect your bonus for this task. </u> </h5>",
+		        questions: [{
+		            prompt: "Is there anything else you would like us to know? <br> (Can be a specific concern or general suggestion for improvement)",
+		            name: 'anything else'
+		          },
+		        ],
+		            on_finish: function(data){
+
+                  var interaction_data = jsPsych.data.getInteractionData();
+                  data.screen = interaction_data.json();
+
+		              var dat4 = jsPsych.data.getLastTrialData().values()[0];
+		              var answer4 = JSON.parse(dat4.responses).Q0;
+		              if (answer4 == ''){
+		                jsPsych.data.addDataToLastTrial({
+		                fb_type: "nonsuspicious",
+		                exp_stage:"feedback_other",
+		                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+		              })
+		            } else {
+		              jsPsych.data.addDataToLastTrial({
+		                fb_type: "nonsuspicious",
+		                fb_issue: 'other',
+		                fb_issue_txt: answer4,
+		                exp_stage:"feedback_other",
+		                primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                    exp_part: "feedback"
+		                })
+		              }
+		            }
+		        };
+
+		// conclusion
+		    var fb_end_exp_ns = {
+		      type: 'html-keyboard-response',
+		      stimulus: '<p>Thank you! This marks the end of the feeback survey.</p> <p>Press any key to return to the home page.</p>',
+		      on_finish: function(data) {
+
+            var interaction_data = jsPsych.data.getInteractionData();
+            data.screen = interaction_data.json();
+
+		        jsPsych.data.addDataToLastTrial({
+		          exp_stage:"exp_end",
+		          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index
+		        })
+		      }
+		    };
+
+		// timeline push
+
+
+		// evaluate whether any of the responses were suspicious and provide appropriate quiz
+//
+
+		    var eval_ss_timeline = {
+		      // timeline: [fb_warning_ss, fb_q1_ss, fb_q1_eval_ss, fb_q2_ss, fb_q2_eval_ss, fb_q3_ss, fb_q4_ss, fb_end_exp_ss],
+          timeline: [fb_warning_ss, fb_q1_ss, fb_q1_eval_ss, fb_q2_ss, fb_q2_eval_ss, fb_q3_ss, fb_q4_ss],
+		      conditional_function: function(data) {
+		        // sus_dat = jsPsych.data.getLastTrialData().values()[0];
+		        // sus_dat1 = JSON.parse(sus_dat.suspicious);
+            sus_dat = jsPsych.data.get().filter({exp_part: 'main', suspicious: true}).count()
+		        if (sus_dat >= 1) {
+		          return true;
+		        } else {
+		          return false;
+		        }
+		      },
+		    };
+		    timeline.push(eval_ss_timeline);
+
+		    var eval_ns_timeline = {
+		      // timeline: [fb_warning_ns, fb_q1_ns, fb_q1_eval_ns, fb_q2_ns, fb_q2_eval_ns, fb_q3_ns, fb_q4_ns, fb_end_exp_ns],
+          timeline: [fb_warning_ns, fb_q1_ns, fb_q1_eval_ns, fb_q2_ns, fb_q2_eval_ns, fb_q3_ns, fb_q4_ns],
+		      conditional_function: function(data) {
+		        if (sus_dat == 0) {
+		          return true;
+		        } else {
+		          return false;
+		        }
+		      },
+		    };
+		    timeline.push(eval_ns_timeline);
+
+//// DATA SAVE AND CONCLUDE  ///////////////////////////////////////////////////////////////////////////////
+        // Save data to CSV
+                function saveData_csv(name, data){
+                  var xhr = new XMLHttpRequest();
+                  xhr.open('POST', 'save_data.php');
+                  xhr.setRequestHeader('Content-Type', 'application/json');
+                  xhr.send(JSON.stringify({filename: name, filedata: data}));
+                }
+
+                /* grab data before the end of the experiment */
+
+                var save_data = {
+                  type: 'call-function',
+                  func: function(){ saveData_csv(subjectId + '_' + weekId + '_' + expId, jsPsych.data.get().csv());
+                  },
+                  timing_post_trial: 0,
+                  on_finish: function(data) {
+                    jsPsych.data.addDataToLastTrial({
+                      exp_stage:"save_CSV",
+                      primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                      exp_part: "save"
+                    })
+                  }
+                };
+                timeline.push(save_data);
+                console.log('csv save successful')
+
+    // // database save
+
+    						function saveData() {
+    							var xhr = new XMLHttpRequest();
+    							xhr.open('POST', 'write_data_rdm.php'); // change 'write_data.php' to point to php script.
+    							xhr.setRequestHeader('Content-Type', 'application/json');
+    							xhr.onload = function() {
+    								console.log('xhr response text coming up')
+    								console.log(xhr.responseText);
+    								if(xhr.status == 200){
+    									var response = JSON.parse(xhr.responseText);
+    									console.log(xhr.responseText);
+    									console.log(response.success);
+    								}
+    							};
+    							xhr.send(jsPsych.data.get().json());
+    							console.log('function finished well')
+    						};
+
+                var db_save = {
+    						type: 'call-function',
+    						func: saveData,
+    						on_finish: function(data) {
+    							jsPsych.data.addDataToLastTrial({
+    								exp_stage:"save_database",
+    								primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+    								exp_part: "save"
+    								})
+    							}
+    						};
+    						timeline.push(db_save)
+
+
+    // data saving + compensation code
+                  var save_wait_1 = {
+                    type: 'html-keyboard-response',
+                    stimulus: '<p> Thank you for your participation!</p>' +
+                    '<p> Please wait about 30 seconds while your data is saving.</p>' +
+                    '<p> You will be automatically redirected to the next page momentarily.</p>',
+                    choices: [jsPsych.NO_KEYS],
+                    trial_duration: 30000,
+                    response_ends_trial: false,
+                    on_finish: function(data) {
+                      jsPsych.data.addDataToLastTrial({
+                        exp_stage:"data_saving",
+                        primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "save"
+                      })
+                    }
+                  };
+
+                  var save_wait_2 = {
+                  	type: 'html-button-response',
+                  	stimulus: '<p> Your data has been saved!</p>' +
+                  	'<p> You may click the button below to proceed to your completion code. </p>',
+                  	choices: ['Ready'],
+                  	response_ends_trial: true,
+                  	on_finish: function(data) {
+                  		jsPsych.data.addDataToLastTrial({
+                  			exp_stage:"data_saved",
+                  			primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "save"
+                  		})
+                  	}
+                  };
+
+                  var comp_code = {
+                  	type: 'html-keyboard-response',
+                  	stimulus: '<p> Your completion code is</p>' + comp_code + '<p> No action is necessary, you may exit the window. </p>',
+                  	response_ends_trial: true,
+                  	on_finish: function(data) {
+                  		jsPsych.data.addDataToLastTrial({
+                  			exp_stage:"comp_code",
+                  			primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+                        exp_part: "save"
+                  		})
+                  	}
+                  };
+
+                  timeline.push(save_wait_1, save_wait_2, comp_code)
+
+                jsPsych.init({
+                  timeline: timeline,
+                  // on_finish: function(){
+                  //     jsPsych.data.displayData();
+                  //     jsPsych.data.get().localSave('csv','rdm_0.csv');
+                  // }
+                });
+      </script>
+
+    </html>

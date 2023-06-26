@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Personality Quiz</title>
+        <script src="jspsych-6.0.5/jspsych.js"></script>
+    		<script src="jspsych-6.0.5/plugins/jspsych-fullscreen.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-html-keyboard-response.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-instructions.js"></script>
+        <script src='jspsych-6.0.5/plugins/jspsych-survey-text.js'></script>
+        <script src='jspsych-6.0.5/plugins/jspsych-survey-likert.js'></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-multi-choice.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-survey-multi-select.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-html-button-response.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-call-function.js"></script>
+        <script src="jspsych-6.0.5/plugins/jspsych-external-html.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="jspsych-6.0.5/css/jspsych.css"></link>
+        <link rel="stylesheet" href="jspsych-6.0.5/css/style.css"></link>
+        <link href="jspsych-6.0.5/css/jspsych.css" rel="stylesheet" type="text/css"></link>
+        <link rel='stylesheet' type='text/css' href='jspsych-6.0.5/css/jspsych.css'>
+    </head>
+    <body></body>
+    <script>
+
+
+// start timeline
+    timeline = []
+
+// quick change variables
+
+      var nextTask_name = "Go or Withhold Game";
+      var nextTask_Id = "gng";
+      var num_questions = 30
+
+// add identifying information for primary key
+
+			var weekId = "1"; // 0 = pilot
+			jsPsych.data.addProperties({
+				weekId: weekId
+			});
+
+			var expId = "bi_" + jsPsych.randomization.randomID(8); // bi = barrat impulsiveness
+      var eId = "bi"
+			jsPsych.data.addProperties({
+				expId: eId
+			});
+
+			var fullurl = window.location.href;
+			jsPsych.data.addProperties({
+				url: fullurl
+			});
+
+			var subjectId = jsPsych.data.getURLVariable('workerId');
+			jsPsych.data.addProperties({
+				subjectId: subjectId
+			});
+
+			var assignmentId = jsPsych.data.getURLVariable('assignmentId');
+			jsPsych.data.addProperties({
+				assignmentId: assignmentId
+			});
+
+			var hitId = jsPsych.data.getURLVariable('hitId');
+			jsPsych.data.addProperties({
+				hitId: hitId
+			});
+
+
+// fullscreen
+
+      var fullscreen = {
+        type: 'fullscreen',
+        fullscreen_mode: true,
+        on_finish: function(data) {
+          jsPsych.data.addDataToLastTrial({
+            exp_stage:"fullscreen",
+            primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+            exp_part: "fullscreen"
+          })
+        }
+      }
+
+      timeline.push(fullscreen)
+
+
+// instructions block
+
+      var instructions = {
+          type: 'instructions',
+          pages: [
+            '<p> Thank you for your participation! </p>' +
+            "<p align='left'> Before we get started with the game, we would like you to fill out this brief personality survey.</p>",
+
+            "<p align='left'> People differ in the ways they act and think in different situations. </p>" +
+            "<p align='left'> This is a test to measure some of the ways in which you think and act. </p>" +
+            "<p align='left'> Read each statement and click the bubble that best describes you.</p>" +
+            "<p align='left'> The scale you will use to indicate your choice ranges from <q>Rarely/Never</q> (1) to <q>Almost Always/Always</q> (4) and looks like this: </p>" +
+            '<img src="img/bi_scale.png"></img><p>',
+
+            "<p align='left'> Please take your time and answer as thoughtfully and truthfully as possible. </p>"+
+            "<p align='left'> However, also note that we reserve the right to withold your bonus payment if we see excessive time wasting, exiting full screen, <br> minimizing your browser window, switching browser tabs, or if you answer so quickly that it is not possible you read the question.",
+            ],
+         show_clickable_nav: true,
+         on_finish: function(data) {
+          jsPsych.data.addDataToLastTrial({
+            exp_stage:"instructions",
+            primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+            exp_part: "instructions"
+          })
+        }
+      };
+      timeline.push(instructions)
+
+
+// answer scale
+
+    var scale_time_others = ["1<br> Rarely", "2 <br> Occasionally", "3 <br> Often", "4 <br> Almost Always/Always"];
+
+// question prompts
+
+    var questions =  ["I plan tasks carefully.",
+                      "I do things without thinking.",
+                      "I make-up my mind quickly.",
+                      "I am happy-go-lucky.",
+                      "I don't \"pay attention.\"",
+                      "I have \"racing\" thoughts.",
+                      "I plan trips well ahead of time.",
+                      "I am self controlled.",
+                      "I concentrate easily.",
+                      "I save regularly.",
+                      "I \"squirm\" at plays or lectures.",
+                      "I am a careful thinker",
+                      "I plan for job security",
+                      "I say things without thinking.",
+                      "I like to think about complex problems.",
+                      "I change jobs.",
+                      "I act \"on impulse\".",
+                      "I get easily bored when solving thought problems.",
+                      "I act on the spur of the moment.",
+                      "I am a steady thinker.",
+                      "I change residences.",
+                      "I buy things on impulse.",
+                      "I can only think about one thing at a time.",
+                      "I change hobbies.",
+                      "I spend or charge more than I earn.",
+                      "I often have extraneous thoughts when thinking.",
+                      "I am more interested in the present than the future.",
+                      "I am restless at the theater or lectures.",
+                      "I like puzzles.",
+                      "I am future oriented."]
+
+
+// question asking set up
+    questions.forEach((thing, index) => {
+
+    questionNum = "question" + index
+
+// ask question
+    var questionNum = {
+        type:'survey-likert',
+        preamble: "<p align='left'><font size='4'><br>For the following statement please indicate the degree to which it describes the way you act and think.</p>",
+        questions: [
+          {prompt: "<p><font size='4.5'><b>" + thing +"</b></p><br>",
+            labels: scale_time_others,
+            required: true,
+            },
+          ],
+          on_finish: function(data) {
+            curr_question = jsPsych.data.get().filter({exp_stage:'question'}).count() + 1
+            // console.log("question" + curr_question)
+            jsPsych.setProgressBar(curr_question / questions.length);
+
+            var last = jsPsych.data.getLastTrialData().values()[0];
+            var resp = JSON.parse(last.responses).Q0;
+            data.answer = resp;
+
+            if (data.answer == 0) {                       // response coding
+              data.answer_word = "rarely"
+            } else if (data.answer == 1) {
+                data.answer_word  = "occasionally"
+            } else if (data.answer == 2) {
+              data.answer_word  = "often"
+            } else if (data.answer == 3) {
+              data.answer_word  = "always"
+            }
+
+            if (data.rt < 1200 ) {
+              data.suspicious = true;
+              data.suspicious_type = "too_fast"
+            }
+
+            data.question = thing
+
+            jsPsych.data.addDataToLastTrial({
+              q_num: curr_question,
+              exp_stage:"question",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "main"
+            })
+          }
+        }
+    timeline.push(questionNum);
+  })
+
+
+// conclude survey
+
+    var survey_end = {
+      type: 'html-keyboard-response',
+      stimulus: "<p> This concludes the personality survey</p>" +
+      '<p> Press any key to go to the dashboard where you may take a pause before the next game.</p>',
+      trial_duration: 2500,
+      response_ends_trial: false,
+      on_finish: function(data) {
+        num_0 = jsPsych.data.get().filter({answer: 0}).count()
+        num_1 = jsPsych.data.get().filter({answer: 1}).count()
+        num_2 = jsPsych.data.get().filter({answer: 2}).count()
+        num_3 = jsPsych.data.get().filter({answer: 3}).count()
+        console.log(num_0, num_1, num_2, num_3)
+        console.log(questions.length)
+
+        if (num_0 == questions.length){
+          data.suspicious = true
+          data.suspicious_type = 'all_one'
+        } else if (num_1 == questions.length) {
+          data.suspicious = true
+          data.suspicious_type = 'all_one'
+        } else if (num_2 == questions.length) {
+          data.suspicious = true
+          data.suspicious_type = 'all_one'
+        } else if (num_3 == questions.length) {
+          data.suspicious = true
+          data.suspicious_type = 'all_one'
+        } else {
+          data.suspicious = false
+        };
+
+        var interaction_data = jsPsych.data.getInteractionData();
+        data.screen = interaction_data.json();
+
+        jsPsych.data.addDataToLastTrial({
+          exp_stage:"block_end",
+          primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+          exp_part: "main"
+        })
+      }
+    };
+    timeline.push(survey_end)
+
+
+// "dashboard" - allows a rest before proceeding
+
+				var dash_to_task = {
+					type: "html-button-response",
+					stimulus:
+						'<div id="blue"> ' +
+						'<div id="title">' +
+						"<h1>DASHBOARD</h1>" +
+						"<h3>If you need to take a brief rest between tasks please do so now.</h3>" +
+						"<h2>Click the button below to proceed to the next task.</h2>" +
+						"<h4>Note: you will not be paid for the time you spend on this page.</h4>" +
+						"</div> " +
+						"</div>",
+					button_html: '<button style="height:75px;width:400px;background-color:powderblue">%choice%</button>',
+					choices: ["<h1>" + nextTask_name + "</h1>"],
+					on_finish: function(data) {
+
+						var interaction_data = jsPsych.data.getInteractionData();
+						data.screen = interaction_data.json();
+
+						jsPsych.data.addDataToLastTrial({
+							exp_stage:"dashboard",
+							primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+							task_selected: nextTask_Id,
+							exp_part: "dash"
+						})
+					}
+				}
+				timeline.push(dash_to_task)
+
+
+// save data to CSV
+
+        function saveData_csv(name, data){
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', 'save_data.php');
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.send(JSON.stringify({filename: name, filedata: data}));
+        }
+
+        var save_data = {
+          type: 'call-function',
+          func: function(){ saveData_csv(subjectId + '_' + weekId + '_' + expId, jsPsych.data.get().csv());
+          },
+          timing_post_trial: 0,
+          on_finish: function(data) {
+            jsPsych.data.addDataToLastTrial({
+              exp_stage:"csv_save",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "save"
+            })
+          }
+        };
+        timeline.push(save_data);
+        console.log('csv save successful')
+
+
+// save data to database
+
+        function saveData() {
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', 'write_data_bi.php'); // change 'write_data.php' to point to php script.
+          xhr.setRequestHeader('Content-Type', 'application/json');
+          xhr.onload = function() {
+            console.log('xhr response text coming up')
+            console.log(xhr.responseText);
+            if(xhr.status == 200){
+              var response = JSON.parse(xhr.responseText);
+              console.log(xhr.responseText);
+              console.log(response.success);
+            }
+          };
+          xhr.send(jsPsych.data.get().json());
+          console.log('function finished well')
+        };
+
+        var db_save = {
+        type: 'call-function',
+        func: saveData,
+        on_finish: function(data) {
+          jsPsych.data.addDataToLastTrial({
+            exp_stage:"save_database",
+            primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+            exp_part: "save"
+            })
+          }
+        };
+        timeline.push(db_save)
+
+
+// data saving time
+
+        var save_wait_1 = {
+          type: 'html-keyboard-response',
+          stimulus: "<p> You're doing great!</p>" +
+          '<p> Please wait a few seconds while we save your data and load the next game.</p>' +
+          '<p> You will be automatically redirected to the next page momentarily.</p>',
+          choices: [jsPsych.NO_KEYS],
+          trial_duration: 6000,
+          response_ends_trial: false,
+          on_finish: function(data) {
+            jsPsych.data.addDataToLastTrial({
+              exp_stage:"data_saving",
+              primary_key: subjectId + '_' + weekId + '_' + expId + '_' + data.trial_index,
+              exp_part: "save"
+            })
+          }
+        };
+        timeline.push(save_wait_1)
+
+// run all and save
+        jsPsych.init({
+          timeline: timeline,
+          show_progress_bar: true,
+          auto_update_progress_bar: false,
+          on_finish: function() {window.location.href = "gng.html" + '?workerId=' + subjectId + '&hitId=' + hitId + '&assignmentId=' + assignmentId}
+          // on_finish: function() {                                 // for testing purposes
+          // 	jsPsych.data.get().localSave('csv','bi_0_CSV.csv');
+          // 	jsPsych.data.displayData();
+          // }
+        });
+
+  </script>
+
+</html>
