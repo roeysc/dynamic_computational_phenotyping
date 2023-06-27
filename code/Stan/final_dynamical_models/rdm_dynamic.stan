@@ -1,4 +1,5 @@
 // In this version, the evidence accumulation rate delta is modeled with an exp() transform. This ensures positivity, and also allows obtaining high values more easily (indeed, we expect the raw delta to be quite high, on the order of 50-100, since we then multiply it by the coherence fraction to obtain the trial-specific evidence accumulation rate).
+// This model was adopted from the hBayesDM Package - https://github.com/CCS-Lab/hBayesDM
 
 functions {
 
