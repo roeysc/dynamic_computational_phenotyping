@@ -1,3 +1,4 @@
+// This model was adopted from the hBayesDM Package - https://github.com/CCS-Lab/hBayesDM
 
 
 functions {
