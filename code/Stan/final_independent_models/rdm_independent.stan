@@ -1,5 +1,5 @@
 // wiener_rng function was generously provided by Sean Pinkney; see https://discourse.mc-stan.org/t/alternative-to-wiener-rng-in-stan/28443
-
+// This model was adopted from the hBayesDM Package - https://github.com/CCS-Lab/hBayesDM
 
 functions {
 // The following functions are required for the RDM task (for sampling from the Wiener distribution)
